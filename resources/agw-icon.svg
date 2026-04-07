@@ -1,3 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+  <!-- Left dumbbell connector -->
+  <circle cx="7" cy="5.5" r="2"/>
+  <rect x="5.8" y="5.5" width="2.4" height="6" rx="1.2"/>
+  <circle cx="7" cy="13.5" r="2"/>
+  <!-- Center dumbbell connector (taller) -->
+  <circle cx="12" cy="3" r="2"/>
+  <rect x="10.8" y="3" width="2.4" height="8" rx="1.2"/>
+  <circle cx="12" cy="13" r="2"/>
+  <!-- Right dumbbell connector -->
+  <circle cx="17" cy="5.5" r="2"/>
+  <rect x="15.8" y="5.5" width="2.4" height="6" rx="1.2"/>
+  <circle cx="17" cy="13.5" r="2"/>
+  <!-- Bottom circle -->
+  <circle cx="12" cy="19" r="2"/>
 </svg>
