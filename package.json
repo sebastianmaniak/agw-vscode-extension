@@ -52,6 +52,16 @@
         "title": "Configure",
         "category": "AgentGateway",
         "icon": "$(gear)"
+      },
+      {
+        "command": "agw.toggleTool",
+        "title": "Toggle Tool for Chat",
+        "category": "AgentGateway"
+      },
+      {
+        "command": "agw.inspectTool",
+        "title": "Inspect Tool",
+        "category": "AgentGateway"
       }
     ],
     "menus": {
@@ -60,6 +70,16 @@
           "command": "agw.refreshTools",
           "when": "view == agw-tools",
           "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "agw.toggleTool",
+          "when": "view == agw-tools"
+        },
+        {
+          "command": "agw.inspectTool",
+          "when": "view == agw-tools"
         }
       ]
     },
