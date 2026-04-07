@@ -1,0 +1,119 @@
+{
+  "name": "agw-vscode",
+  "displayName": "AgentGateway",
+  "description": "AI chat and MCP tool browser for AgentGateway",
+  "version": "0.1.0",
+  "publisher": "solo-io",
+  "license": "Apache-2.0",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["AI", "Chat"],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "agw-explorer",
+          "title": "AgentGateway",
+          "icon": "resources/agw-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "agw-explorer": [
+        {
+          "id": "agw-tools",
+          "name": "MCP Tools"
+        },
+        {
+          "type": "webview",
+          "id": "agw-chat",
+          "name": "Chat"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "agw.openChat",
+        "title": "Open Chat",
+        "category": "AgentGateway",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "agw.refreshTools",
+        "title": "Refresh Tools",
+        "category": "AgentGateway",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "agw.configure",
+        "title": "Configure",
+        "category": "AgentGateway",
+        "icon": "$(gear)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "agw.refreshTools",
+          "when": "view == agw-tools",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "AgentGateway",
+      "properties": {
+        "agw.llmEndpoint": {
+          "type": "string",
+          "default": "http://localhost:8080",
+          "description": "URL of the AgentGateway LLM listener (OpenAI-compatible API)"
+        },
+        "agw.mcpEndpoint": {
+          "type": "string",
+          "default": "http://localhost:3000",
+          "description": "URL of the AgentGateway MCP listener"
+        },
+        "agw.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API key for authenticated AgentGateway instances"
+        },
+        "agw.defaultModel": {
+          "type": "string",
+          "default": "",
+          "description": "Default LLM model to use for chat (leave empty to pick from available models)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "package": "node esbuild.mjs --production",
+    "check-types": "tsc --noEmit && tsc --noEmit -p src/webview/tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0",
+    "preact": "^10.24.0",
+    "htm": "^3.1.1",
+    "marked": "^14.0.0",
+    "highlight.js": "^11.10.0",
+    "dompurify": "^3.1.0",
+    "@types/dompurify": "^3.0.5"
+  },
+  "dependencies": {
+    "preact": "^10.24.0",
+    "htm": "^3.1.1",
+    "marked": "^14.0.0",
+    "highlight.js": "^11.10.0",
+    "dompurify": "^3.1.0"
+  }
+}
