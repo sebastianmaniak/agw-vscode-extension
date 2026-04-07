@@ -1,0 +1,250 @@
+:root {
+  --bg: var(--vscode-editor-background);
+  --fg: var(--vscode-editor-foreground);
+  --border: var(--vscode-panel-border);
+  --input-bg: var(--vscode-input-background);
+  --input-fg: var(--vscode-input-foreground);
+  --input-border: var(--vscode-input-border);
+  --btn-bg: var(--vscode-button-background);
+  --btn-fg: var(--vscode-button-foreground);
+  --btn-hover: var(--vscode-button-hoverBackground);
+  --user-bg: var(--vscode-textBlockQuote-background);
+  --tool-bg: var(--vscode-editorWidget-background);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  color: var(--fg);
+  background: var(--bg);
+  height: 100vh;
+  overflow: hidden;
+}
+
+#root { height: 100%; }
+
+.chat-panel { display: flex; flex-direction: column; height: 100%; }
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.header-right { display: flex; align-items: center; gap: 8px; }
+
+.model-selector {
+  background: var(--input-bg);
+  color: var(--input-fg);
+  border: 1px solid var(--input-border);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  max-width: 200px;
+}
+
+.connection-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.connection-dot.connected { background: #4caf50; }
+.connection-dot.disconnected { background: #f44336; }
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--fg);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.icon-btn:hover { background: var(--vscode-toolbar-hoverBackground); }
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  opacity: 0.6;
+  text-align: center;
+  padding: 24px;
+}
+
+.message { max-width: 100%; }
+
+.message-label { font-size: 11px; font-weight: 600; margin-bottom: 4px; opacity: 0.7; }
+
+.message-user .message-content {
+  background: var(--user-bg);
+  padding: 8px 12px;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.message-assistant .message-content { padding: 4px 0; line-height: 1.5; }
+
+.message-assistant .message-content pre {
+  background: var(--vscode-textCodeBlock-background);
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.message-assistant .message-content code {
+  font-family: var(--vscode-editor-font-family);
+  font-size: var(--vscode-editor-font-size);
+}
+
+.message-assistant .message-content p { margin: 4px 0; }
+
+.cursor {
+  display: inline-block;
+  width: 6px;
+  height: 14px;
+  background: var(--fg);
+  margin-left: 2px;
+  animation: blink 0.8s infinite;
+  vertical-align: text-bottom;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.tool-card {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  background: var(--tool-bg);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.tool-card-header { display: flex; align-items: center; gap: 6px; }
+.tool-icon { font-size: 11px; font-weight: 700; font-family: var(--vscode-editor-font-family); opacity: 0.7; }
+.tool-name { font-weight: 600; }
+.tool-label { font-weight: 600; opacity: 0.8; }
+.tool-expand { margin-left: auto; opacity: 0.5; }
+
+.tool-args,
+.tool-result-content {
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--vscode-textCodeBlock-background);
+  border-radius: 4px;
+  font-family: var(--vscode-editor-font-family);
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.input-area {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.chat-input {
+  flex: 1;
+  background: var(--input-bg);
+  color: var(--input-fg);
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  resize: none;
+  line-height: 1.4;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.chat-input:focus { outline: none; border-color: var(--vscode-focusBorder); }
+.chat-input:disabled { opacity: 0.5; }
+
+.send-btn {
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.send-btn:hover:not(:disabled) { background: var(--btn-hover); }
+.send-btn:disabled { opacity: 0.5; cursor: default; }
+
+.tool-test-form { border: 1px solid var(--border); border-radius: 6px; margin: 12px; overflow: hidden; }
+
+.tool-test-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--tool-bg);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.tool-test-body { padding: 12px; }
+.tool-test-desc { font-size: 12px; opacity: 0.7; margin-bottom: 12px; }
+.form-field { margin-bottom: 12px; }
+.form-label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+.form-hint { font-weight: normal; opacity: 0.6; margin-left: 4px; }
+
+.form-input,
+.form-select {
+  width: 100%;
+  background: var(--input-bg);
+  color: var(--input-fg);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+}
+
+.form-input:focus,
+.form-select:focus { outline: none; border-color: var(--vscode-focusBorder); }
+.form-checkbox { margin: 4px 0; }
+
+.tool-test-result { margin-top: 12px; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+.tool-test-result.error { border-color: var(--vscode-errorForeground); }
+.tool-test-result-label { padding: 4px 8px; font-size: 11px; font-weight: 600; background: var(--tool-bg); }
+
+.tool-test-result pre {
+  padding: 8px;
+  font-family: var(--vscode-editor-font-family);
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+}
