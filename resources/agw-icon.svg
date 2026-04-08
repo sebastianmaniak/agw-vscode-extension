@@ -1,16 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-  <!-- Left dumbbell connector -->
-  <circle cx="7" cy="5.5" r="2"/>
-  <rect x="5.8" y="5.5" width="2.4" height="6" rx="1.2"/>
-  <circle cx="7" cy="13.5" r="2"/>
-  <!-- Center dumbbell connector (taller) -->
-  <circle cx="12" cy="3" r="2"/>
-  <rect x="10.8" y="3" width="2.4" height="8" rx="1.2"/>
-  <circle cx="12" cy="13" r="2"/>
-  <!-- Right dumbbell connector -->
-  <circle cx="17" cy="5.5" r="2"/>
-  <rect x="15.8" y="5.5" width="2.4" height="6" rx="1.2"/>
-  <circle cx="17" cy="13.5" r="2"/>
-  <!-- Bottom circle -->
-  <circle cx="12" cy="19" r="2"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="currentColor">
+  <!-- Left connector -->
+  <circle cx="28" cy="28" r="9"/>
+  <rect x="21.5" y="28" width="13" height="26" rx="6.5"/>
+  <circle cx="28" cy="54" r="9"/>
+  <!-- Center connector (taller) -->
+  <circle cx="50" cy="18" r="9"/>
+  <rect x="43.5" y="18" width="13" height="36" rx="6.5"/>
+  <circle cx="50" cy="54" r="9"/>
+  <!-- Right connector -->
+  <circle cx="72" cy="28" r="9"/>
+  <rect x="65.5" y="28" width="13" height="26" rx="6.5"/>
+  <circle cx="72" cy="54" r="9"/>
+  <!-- Bottom dot -->
+  <circle cx="50" cy="78" r="9"/>
 </svg>
