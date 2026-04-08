@@ -79,6 +79,12 @@
 
 ---
 
+<p align="center">
+  <img src="agw-vscode.gif" alt="agentgateway for VS Code demo" width="800">
+</p>
+
+---
+
 ## Quick Start
 
 ### 1. Start agentgateway
