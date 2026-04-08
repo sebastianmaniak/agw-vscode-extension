@@ -1,10 +1,16 @@
 // --- Configuration ---
 
+export interface ModelPreset {
+  id: string;
+  provider?: string;
+}
+
 export interface AgwConfig {
   llmEndpoint: string;
   mcpEndpoint: string;
   apiKey: string;
   defaultModel: string;
+  modelPresets: ModelPreset[];
 }
 
 // --- OpenAI-compatible API types ---
@@ -92,6 +98,13 @@ export interface McpTool {
   serverName?: string;
 }
 
+export interface McpResource {
+  uri: string;
+  name: string;
+  description?: string;
+  mimeType?: string;
+}
+
 export interface McpJsonRpcRequest {
   jsonrpc: '2.0';
   id: number;
@@ -110,6 +123,16 @@ export interface McpJsonRpcResponse {
   };
 }
 
+// --- Conversation history ---
+
+export interface ConversationSummary {
+  id: string;
+  title: string;
+  model: string;
+  updatedAt: number;
+  messageCount: number;
+}
+
 // --- Webview message types ---
 
 export type ExtensionToWebviewMessage =
@@ -123,7 +146,22 @@ export type ExtensionToWebviewMessage =
   | { type: 'toolsLoaded'; tools: McpTool[] }
   | { type: 'toolTestResult'; result: string; error?: string }
   | { type: 'assistantMessage'; content: string }
-  | { type: 'conversationCleared' };
+  | { type: 'conversationCleared' }
+  | { type: 'conversationList'; conversations: ConversationSummary[] }
+  | { type: 'conversationLoaded'; id: string; messages: ChatMessage[]; title: string; model: string }
+  | { type: 'resourcesLoaded'; resources: McpResource[] }
+  | { type: 'resourceContent'; uri: string; content: string; mimeType?: string }
+  | { type: 'systemPromptLoaded'; prompt: string }
+  | { type: 'promptTemplatesLoaded'; templates: PromptTemplate[] }
+  | { type: 'a2aAgentCard'; card: A2aAgentCardInfo | null; error?: string }
+  | { type: 'a2aTaskResult'; result: string; error?: string };
+
+export interface A2aAgentCardInfo {
+  name: string;
+  description?: string;
+  url: string;
+  skills?: Array<{ id: string; name: string; description?: string }>;
+}
 
 export type WebviewToExtensionMessage =
   | { type: 'sendMessage'; content: string }
@@ -133,4 +171,25 @@ export type WebviewToExtensionMessage =
   | { type: 'toggleTool'; toolName: string; enabled: boolean }
   | { type: 'inspectTool'; toolName: string }
   | { type: 'reconnect' }
-  | { type: 'refreshTools' };
+  | { type: 'refreshTools' }
+  | { type: 'listConversations' }
+  | { type: 'loadConversation'; id: string }
+  | { type: 'deleteConversation'; id: string }
+  | { type: 'exportChat' }
+  | { type: 'setSystemPrompt'; prompt: string }
+  | { type: 'getSystemPrompt' }
+  | { type: 'listResources' }
+  | { type: 'readResource'; uri: string }
+  | { type: 'savePromptTemplate'; template: PromptTemplate }
+  | { type: 'deletePromptTemplate'; id: string }
+  | { type: 'listPromptTemplates' }
+  | { type: 'fetchA2aCard' }
+  | { type: 'sendA2aTask'; message: string; skillId?: string };
+
+// --- Prompt templates ---
+
+export interface PromptTemplate {
+  id: string;
+  name: string;
+  content: string;
+}

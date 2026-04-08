@@ -1,5 +1,5 @@
 import type { GatewayClient } from './client';
-import type { McpTool, McpJsonRpcRequest, McpJsonRpcResponse } from '../types';
+import type { McpTool, McpResource, McpJsonRpcRequest, McpJsonRpcResponse } from '../types';
 
 export class McpClient {
   private gateway: GatewayClient;
@@ -149,6 +149,34 @@ export class McpClient {
       .filter((c) => c.type === 'text')
       .map((c) => c.text ?? '')
       .join('\n');
+  }
+
+  async listResources(): Promise<McpResource[]> {
+    if (!this.sessionId) {
+      await this.connect();
+    }
+    const result = await this.rpc('resources/list');
+    if (result.error) {
+      throw new Error(`MCP resources/list failed: ${result.error.message}`);
+    }
+    const data = result.result as { resources: McpResource[] };
+    return data.resources ?? [];
+  }
+
+  async readResource(uri: string): Promise<{ content: string; mimeType?: string }> {
+    if (!this.sessionId) {
+      await this.connect();
+    }
+    const result = await this.rpc('resources/read', { uri });
+    if (result.error) {
+      throw new Error(`MCP resources/read failed: ${result.error.message}`);
+    }
+    const data = result.result as { contents: Array<{ uri: string; text?: string; mimeType?: string; blob?: string }> };
+    const first = data.contents?.[0];
+    return {
+      content: first?.text ?? (first?.blob ? atob(first.blob) : ''),
+      mimeType: first?.mimeType,
+    };
   }
 
   disconnect(): void {

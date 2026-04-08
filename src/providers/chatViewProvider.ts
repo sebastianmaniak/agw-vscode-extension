@@ -6,19 +6,49 @@ import type {
   ChatTool,
   McpTool,
   ToolCall,
+  PromptTemplate,
   ChatCompletionChunk,
   ExtensionToWebviewMessage,
   WebviewToExtensionMessage,
+  A2aAgentCardInfo,
 } from '../types';
 import { streamChatCompletion } from '../gateway/chat';
+
+interface ConversationHandlers {
+  onList: () => void;
+  onLoad: (id: string) => void;
+  onDelete: (id: string) => void;
+  onSave: () => void;
+  onExport: () => void;
+}
+
+interface ResourceHandlers {
+  onList: () => void;
+  onRead: (uri: string) => void;
+}
+
+interface PromptTemplateHandlers {
+  onList: () => void;
+  onSave: (template: PromptTemplate) => void;
+  onDelete: (id: string) => void;
+}
+
+interface A2aHandlers {
+  onFetchCard: () => void;
+  onSendTask: (message: string, skillId?: string) => void;
+}
 
 export class ChatViewProvider implements vscode.WebviewViewProvider {
   private webviewView?: vscode.WebviewView;
   private pendingMessages: ExtensionToWebviewMessage[] = [];
-
   private onReconnect?: () => void;
   private onModelChange?: (model: string) => void;
   private onRefreshTools?: () => void;
+  private onSetSystemPrompt?: (prompt: string) => void;
+  private conversationHandlers?: ConversationHandlers;
+  private resourceHandlers?: ResourceHandlers;
+  private promptTemplateHandlers?: PromptTemplateHandlers;
+  private a2aHandlers?: A2aHandlers;
 
   constructor(
     private readonly extensionUri: vscode.Uri,
@@ -27,19 +57,17 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     private readonly conversation: Conversation,
     private readonly getModel: () => string,
     private readonly getEnabledTools: () => McpTool[],
+    private readonly getSystemPrompt: () => string,
   ) {}
 
-  setReconnectHandler(handler: () => void): void {
-    this.onReconnect = handler;
-  }
-
-  setModelChangeHandler(handler: (model: string) => void): void {
-    this.onModelChange = handler;
-  }
-
-  setRefreshToolsHandler(handler: () => void): void {
-    this.onRefreshTools = handler;
-  }
+  setReconnectHandler(handler: () => void): void { this.onReconnect = handler; }
+  setModelChangeHandler(handler: (model: string) => void): void { this.onModelChange = handler; }
+  setRefreshToolsHandler(handler: () => void): void { this.onRefreshTools = handler; }
+  setSystemPromptHandler(handler: (prompt: string) => void): void { this.onSetSystemPrompt = handler; }
+  setConversationHandlers(handlers: ConversationHandlers): void { this.conversationHandlers = handlers; }
+  setResourceHandlers(handlers: ResourceHandlers): void { this.resourceHandlers = handlers; }
+  setPromptTemplateHandlers(handlers: PromptTemplateHandlers): void { this.promptTemplateHandlers = handlers; }
+  setA2aHandlers(handlers: A2aHandlers): void { this.a2aHandlers = handlers; }
 
   resolveWebviewView(
     webviewView: vscode.WebviewView,
@@ -81,14 +109,12 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         await this.handleSendMessage(msg.content);
         break;
       case 'newChat':
+        this.conversationHandlers?.onSave();
         this.conversation.clear();
         this.sendToWebview({ type: 'conversationCleared' });
         break;
       case 'selectModel':
         this.onModelChange?.(msg.model);
-        break;
-      case 'refreshTools':
-        this.onRefreshTools?.();
         break;
       case 'testTool':
         await this.handleTestTool(msg.toolName, msg.args);
@@ -100,11 +126,60 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
       case 'reconnect':
         this.onReconnect?.();
         break;
+      case 'refreshTools':
+        this.onRefreshTools?.();
+        break;
+      case 'listConversations':
+        this.conversationHandlers?.onList();
+        break;
+      case 'loadConversation':
+        this.conversationHandlers?.onLoad(msg.id);
+        break;
+      case 'deleteConversation':
+        this.conversationHandlers?.onDelete(msg.id);
+        break;
+      case 'exportChat':
+        this.conversationHandlers?.onExport();
+        break;
+      case 'setSystemPrompt':
+        this.onSetSystemPrompt?.(msg.prompt);
+        break;
+      case 'getSystemPrompt':
+        this.sendToWebview({ type: 'systemPromptLoaded', prompt: this.getSystemPrompt() });
+        break;
+      case 'listResources':
+        this.resourceHandlers?.onList();
+        break;
+      case 'readResource':
+        this.resourceHandlers?.onRead(msg.uri);
+        break;
+      case 'listPromptTemplates':
+        this.promptTemplateHandlers?.onList();
+        break;
+      case 'savePromptTemplate':
+        this.promptTemplateHandlers?.onSave(msg.template);
+        break;
+      case 'deletePromptTemplate':
+        this.promptTemplateHandlers?.onDelete(msg.id);
+        break;
+      case 'fetchA2aCard':
+        this.a2aHandlers?.onFetchCard();
+        break;
+      case 'sendA2aTask':
+        this.a2aHandlers?.onSendTask(msg.message, msg.skillId);
+        break;
     }
   }
 
   private async handleSendMessage(content: string): Promise<void> {
-    this.conversation.addUserMessage(content);
+    // Add system prompt if set
+    const systemPrompt = this.getSystemPrompt();
+    if (systemPrompt && this.conversation.messages.length === 0) {
+      this.conversation.addUserMessage(content);
+      // Prepend system message for the API call
+    } else {
+      this.conversation.addUserMessage(content);
+    }
 
     const enabledTools = this.getEnabledTools();
     const chatTools: ChatTool[] = enabledTools.map((t) => ({
@@ -117,6 +192,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     }));
 
     await this.runCompletionLoop(chatTools);
+    this.conversationHandlers?.onSave();
   }
 
   private async runCompletionLoop(chatTools: ChatTool[]): Promise<void> {
@@ -124,11 +200,18 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     let toolCalls: ToolCall[] = [];
     const toolCallArgs: Map<number, string> = new Map();
 
+    // Build messages with system prompt prepended
+    const systemPrompt = this.getSystemPrompt();
+    const messages = [...this.conversation.messages];
+    if (systemPrompt) {
+      messages.unshift({ role: 'system', content: systemPrompt });
+    }
+
     try {
       await streamChatCompletion(
         this.gateway,
         this.getModel(),
-        this.conversation.messages,
+        messages,
         chatTools,
         (chunk: ChatCompletionChunk) => {
           const choice = chunk.choices[0];

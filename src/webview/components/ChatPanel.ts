@@ -13,10 +13,15 @@ interface ChatPanelProps {
   currentModel: string;
   connected: boolean;
   streaming: boolean;
+  systemPrompt: string;
   onSendMessage: (content: string) => void;
   onNewChat: () => void;
   onSelectModel: (model: string) => void;
   onReconnect: () => void;
+  onShowHistory: () => void;
+  onShowSystemPrompt: () => void;
+  onShowTemplates: () => void;
+  onExportChat: () => void;
 }
 
 export function ChatPanel(props: ChatPanelProps) {
@@ -27,6 +32,16 @@ export function ChatPanel(props: ChatPanelProps) {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [props.messages]);
+
+  // Pick up pending input from template insertion
+  useEffect(() => {
+    const pending = (window as any).__pendingInput;
+    if (pending) {
+      setInput(pending);
+      (window as any).__pendingInput = null;
+      textareaRef.current?.focus();
+    }
+  });
 
   const handleSend = () => {
     const trimmed = input.trim();
@@ -65,10 +80,19 @@ export function ChatPanel(props: ChatPanelProps) {
             <span class="connection-dot ${props.connected ? 'connected' : 'disconnected'}" />
             ${props.connected ? 'Connected' : 'Connect'}
           </button>
-          <button class="icon-btn" onClick=${props.onNewChat} title="New Chat">
-            New
-          </button>
+          <button class="icon-btn" onClick=${props.onNewChat} title="New Chat">New</button>
         </div>
+      </div>
+
+      <div class="chat-toolbar">
+        <button class="toolbar-btn" onClick=${props.onShowHistory} title="Chat History">History</button>
+        <button class="toolbar-btn ${props.systemPrompt ? 'active' : ''}" onClick=${props.onShowSystemPrompt} title="System Prompt">
+          System${props.systemPrompt ? ' *' : ''}
+        </button>
+        <button class="toolbar-btn" onClick=${props.onShowTemplates} title="Prompt Templates">Templates</button>
+        ${props.messages.length > 0 && html`
+          <button class="toolbar-btn" onClick=${props.onExportChat} title="Export as Markdown">Export</button>
+        `}
       </div>
 
       <div class="messages">

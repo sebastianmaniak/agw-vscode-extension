@@ -2,9 +2,14 @@
   "name": "agw-vscode",
   "displayName": "agentgateway",
   "description": "AI chat and MCP tool browser for agentgateway",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "solo-io",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sebastianmaniak/agw-vscode-extension"
+  },
+  "icon": "resources/agw-icon.png",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -105,6 +110,19 @@
           "type": "string",
           "default": "",
           "description": "Default LLM model to use for chat (leave empty to type any model name)"
+        },
+        "agw.modelPresets": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "description": "Model identifier (e.g., gpt-4o)" },
+              "provider": { "type": "string", "description": "Provider name (e.g., OpenAI, Anthropic)" }
+            },
+            "required": ["id"]
+          },
+          "description": "Preset model list with optional provider labels for quick switching"
         }
       }
     }
