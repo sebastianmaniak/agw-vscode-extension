@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/agentgateway/agentgateway"><img src="https://img.shields.io/badge/agentgateway-Linux%20Foundation-blueviolet" alt="Linux Foundation"></a>
+  <img src="https://img.shields.io/badge/built%20by-SebbyCorp-blueviolet" alt="Built by SebbyCorp">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue" alt="License"></a>
   <img src="https://img.shields.io/badge/VS%20Code-1.85%2B-007ACC" alt="VS Code">
   <img src="https://img.shields.io/badge/Cursor-compatible-green" alt="Cursor">
@@ -21,7 +21,7 @@
 
 ## Why?
 
-**[agentgateway](https://github.com/agentgateway/agentgateway)** is a Linux Foundation project that acts as a unified proxy for AI agent communication — routing to any LLM provider, orchestrating MCP tools, and enabling agent-to-agent collaboration.
+**[agentgateway](https://github.com/agentgateway/agentgateway)** is an open-source AI agent communication proxy — routing to any LLM provider, orchestrating MCP tools, and enabling agent-to-agent collaboration.
 
 **This extension brings all of that into your editor.** Instead of switching between terminals, curl commands, and web UIs to test your gateway setup, you get a native VS Code experience with streaming chat, interactive tool testing, and live resource browsing.
 
@@ -219,5 +219,5 @@ Install via `.vsix` in any VS Code-compatible editor.
 ---
 
 <p align="center">
-  <a href="https://agentgateway.dev">agentgateway.dev</a> · <a href="https://github.com/agentgateway/agentgateway">GitHub</a> · <a href="LICENSE">Apache-2.0</a>
+  Built by <strong>SebbyCorp</strong> · <a href="https://agentgateway.dev">agentgateway.dev</a> · <a href="LICENSE">Apache-2.0</a>
 </p>
