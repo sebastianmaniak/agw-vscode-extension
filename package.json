@@ -59,6 +59,12 @@
         "icon": "$(gear)"
       },
       {
+        "command": "agw.sendToChat",
+        "title": "Send Selection to Chat",
+        "category": "agentgateway",
+        "icon": "$(comment-discussion)"
+      },
+      {
         "command": "agw.toggleTool",
         "title": "Toggle Tool for Chat",
         "category": "agentgateway"
@@ -69,7 +75,22 @@
         "category": "agentgateway"
       }
     ],
+    "keybindings": [
+      {
+        "command": "agw.sendToChat",
+        "key": "ctrl+l",
+        "mac": "cmd+l",
+        "when": "editorTextFocus"
+      }
+    ],
     "menus": {
+      "editor/context": [
+        {
+          "command": "agw.sendToChat",
+          "group": "agw",
+          "when": "editorHasSelection"
+        }
+      ],
       "view/title": [
         {
           "command": "agw.refreshTools",

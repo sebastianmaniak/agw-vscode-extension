@@ -1,5 +1,5 @@
 import { h } from 'preact';
-import { useMemo } from 'preact/hooks';
+import { useMemo, useRef, useEffect } from 'preact/hooks';
 import htm from 'htm';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
@@ -8,6 +8,10 @@ import type { UIMessage } from '../index';
 import { ToolCallCard } from './ToolCallCard';
 
 const html = htm.bind(h);
+
+declare function acquireVsCodeApi(): {
+  postMessage(msg: unknown): void;
+};
 
 marked.setOptions({
   highlight(code: string, lang: string) {
@@ -32,8 +36,8 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   }
 
   const isUser = message.role === 'user';
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  // DOMPurify sanitizes all HTML before rendering — XSS safe
   const renderedContent = useMemo(() => {
     if (isUser) {
       return DOMPurify.sanitize(escapeHtml(message.content));
@@ -42,10 +46,51 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     return DOMPurify.sanitize(rawHtml);
   }, [message.content, isUser]);
 
+  // Add code block action buttons after render
+  useEffect(() => {
+    if (isUser || !contentRef.current) return;
+    const preBlocks = contentRef.current.querySelectorAll('pre');
+    preBlocks.forEach((pre) => {
+      if (pre.querySelector('.code-actions')) return;
+      const code = pre.querySelector('code');
+      const rawCode = code?.textContent ?? pre.textContent ?? '';
+      if (!rawCode.trim()) return;
+
+      const actions = document.createElement('div');
+      actions.className = 'code-actions';
+
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'code-action-btn';
+      copyBtn.textContent = 'Copy';
+      copyBtn.title = 'Copy code to clipboard';
+      copyBtn.addEventListener('click', () => {
+        const vscode = acquireVsCodeApi();
+        vscode.postMessage({ type: 'copyCode', code: rawCode });
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
+      });
+
+      const insertBtn = document.createElement('button');
+      insertBtn.className = 'code-action-btn';
+      insertBtn.textContent = 'Insert';
+      insertBtn.title = 'Insert at cursor position in editor';
+      insertBtn.addEventListener('click', () => {
+        const vscode = acquireVsCodeApi();
+        vscode.postMessage({ type: 'insertCodeAtCursor', code: rawCode });
+      });
+
+      actions.appendChild(copyBtn);
+      actions.appendChild(insertBtn);
+      pre.style.position = 'relative';
+      pre.appendChild(actions);
+    });
+  }, [renderedContent, isUser]);
+
   return html`
     <div class="message ${isUser ? 'message-user' : 'message-assistant'}">
       <div class="message-label">${isUser ? 'You' : 'Assistant'}</div>
       <div
+        ref=${contentRef}
         class="message-content"
         dangerouslySetInnerHTML=${{ __html: renderedContent }}
       />

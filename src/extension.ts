@@ -282,6 +282,17 @@ export function activate(context: vscode.ExtensionContext) {
       vscode.commands.executeCommand('agw-chat.focus');
     }),
 
+    vscode.commands.registerCommand('agw.sendToChat', () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) return;
+      const selection = editor.selection;
+      const code = editor.document.getText(selection.isEmpty ? undefined : selection);
+      const fileName = editor.document.fileName.split('/').pop() ?? '';
+      const language = editor.document.languageId;
+      vscode.commands.executeCommand('agw-chat.focus');
+      chatProvider.sendToWebview({ type: 'codeContext', code, fileName, language });
+    }),
+
     vscode.commands.registerCommand('agw.refreshTools', async () => {
       try {
         tools = await mcp.listTools();

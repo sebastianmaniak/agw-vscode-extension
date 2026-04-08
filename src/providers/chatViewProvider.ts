@@ -162,6 +162,12 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
       case 'deletePromptTemplate':
         this.promptTemplateHandlers?.onDelete(msg.id);
         break;
+      case 'insertCodeAtCursor':
+        this.insertCodeAtCursor(msg.code);
+        break;
+      case 'copyCode':
+        vscode.env.clipboard.writeText(msg.code);
+        break;
       case 'fetchA2aCard':
         this.a2aHandlers?.onFetchCard();
         break;
@@ -199,6 +205,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     let assistantContent = '';
     let toolCalls: ToolCall[] = [];
     const toolCallArgs: Map<number, string> = new Map();
+    let responseModel = '';
 
     // Build messages with system prompt prepended
     const systemPrompt = this.getSystemPrompt();
@@ -214,6 +221,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         messages,
         chatTools,
         (chunk: ChatCompletionChunk) => {
+          if (chunk.model) { responseModel = chunk.model; }
           const choice = chunk.choices[0];
           if (!choice) return;
 
@@ -287,7 +295,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         await this.runCompletionLoop(chatTools);
       } else {
         this.conversation.addAssistantMessage(assistantContent);
-        this.sendToWebview({ type: 'streamEnd' });
+        this.sendToWebview({ type: 'streamEnd', responseModel });
       }
     } catch (e: any) {
       this.sendToWebview({ type: 'streamError', error: e.message });
@@ -304,6 +312,21 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     } catch (e: any) {
       this.sendToWebview({ type: 'toolTestResult', result: '', error: e.message });
     }
+  }
+
+  private insertCodeAtCursor(code: string): void {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      vscode.window.showWarningMessage('No active editor to insert code into');
+      return;
+    }
+    editor.edit((editBuilder) => {
+      if (editor.selection.isEmpty) {
+        editBuilder.insert(editor.selection.active, code);
+      } else {
+        editBuilder.replace(editor.selection, code);
+      }
+    });
   }
 
   private getHtml(webview: vscode.Webview): string {

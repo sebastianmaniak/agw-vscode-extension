@@ -13,6 +13,7 @@ interface ChatPanelProps {
   currentModel: string;
   connected: boolean;
   streaming: boolean;
+  responseModel: string;
   systemPrompt: string;
   onSendMessage: (content: string) => void;
   onNewChat: () => void;
@@ -85,6 +86,9 @@ export function ChatPanel(props: ChatPanelProps) {
       </div>
 
       <div class="chat-toolbar">
+        ${props.responseModel && props.responseModel !== props.currentModel && html`
+          <span class="toolbar-model-badge" title="Actual model used by agentgateway">${props.responseModel}</span>
+        `}
         <button class="toolbar-btn" onClick=${props.onShowHistory} title="Chat History">History</button>
         <button class="toolbar-btn ${props.systemPrompt ? 'active' : ''}" onClick=${props.onShowSystemPrompt} title="System Prompt">
           System${props.systemPrompt ? ' *' : ''}

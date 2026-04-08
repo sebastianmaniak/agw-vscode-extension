@@ -137,7 +137,7 @@ export interface ConversationSummary {
 
 export type ExtensionToWebviewMessage =
   | { type: 'streamChunk'; content: string }
-  | { type: 'streamEnd' }
+  | { type: 'streamEnd'; responseModel?: string }
   | { type: 'streamError'; error: string }
   | { type: 'toolCallStart'; toolCall: ToolCall }
   | { type: 'toolCallResult'; toolCallId: string; result: string }
@@ -154,7 +154,8 @@ export type ExtensionToWebviewMessage =
   | { type: 'systemPromptLoaded'; prompt: string }
   | { type: 'promptTemplatesLoaded'; templates: PromptTemplate[] }
   | { type: 'a2aAgentCard'; card: A2aAgentCardInfo | null; error?: string }
-  | { type: 'a2aTaskResult'; result: string; error?: string };
+  | { type: 'a2aTaskResult'; result: string; error?: string }
+  | { type: 'codeContext'; code: string; fileName: string; language: string };
 
 export interface A2aAgentCardInfo {
   name: string;
@@ -183,6 +184,8 @@ export type WebviewToExtensionMessage =
   | { type: 'savePromptTemplate'; template: PromptTemplate }
   | { type: 'deletePromptTemplate'; id: string }
   | { type: 'listPromptTemplates' }
+  | { type: 'insertCodeAtCursor'; code: string }
+  | { type: 'copyCode'; code: string }
   | { type: 'fetchA2aCard' }
   | { type: 'sendA2aTask'; message: string; skillId?: string };
 

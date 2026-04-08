@@ -36,6 +36,7 @@ interface AppState {
   resourceContent: { uri: string; content: string; mimeType?: string } | null;
   streaming: boolean;
   toolTestResult: { result: string; error?: string } | null;
+  responseModel: string;
   a2aAgentCard: A2aAgentCardInfo | null;
   a2aTaskResult: { result: string; error?: string } | null;
   tab: Tab;
@@ -87,6 +88,7 @@ function App() {
       resourceContent: null,
       streaming: false,
       toolTestResult: null,
+      responseModel: '',
       a2aAgentCard: null,
       a2aTaskResult: null,
       tab: saved?.tab ?? 'chat',
@@ -124,11 +126,19 @@ function App() {
           break;
 
         case 'streamEnd':
-          setState((prev) => ({
-            ...prev,
-            messages: prev.messages.map((m) => m.streaming ? { ...m, streaming: false } : m),
-            streaming: false,
-          }));
+          setState((prev) => {
+            const newState = {
+              ...prev,
+              messages: prev.messages.map((m) => m.streaming ? { ...m, streaming: false } : m),
+              streaming: false,
+            };
+            // Update model history with the actual response model
+            if (msg.responseModel && msg.responseModel !== prev.currentModel) {
+              newState.modelHistory = [...new Set([msg.responseModel, ...prev.modelHistory])];
+              newState.responseModel = msg.responseModel;
+            }
+            return newState;
+          });
           break;
 
         case 'streamError':
@@ -205,6 +215,15 @@ function App() {
         case 'promptTemplatesLoaded':
           setState((prev) => ({ ...prev, promptTemplates: msg.templates }));
           break;
+
+        case 'codeContext': {
+          // Insert code context into chat input
+          const block = `\`\`\`${msg.language}\n${msg.code}\n\`\`\``;
+          const prefix = msg.fileName ? `From \`${msg.fileName}\`:\n` : '';
+          (window as any).__pendingInput = prefix + block + '\n\n';
+          setState((prev) => ({ ...prev, tab: 'chat', overlay: 'none' }));
+          break;
+        }
 
         case 'a2aAgentCard':
           setState((prev) => ({ ...prev, a2aAgentCard: msg.card }));
@@ -324,6 +343,7 @@ function App() {
             currentModel=${state.currentModel}
             connected=${state.connected}
             streaming=${state.streaming}
+            responseModel=${state.responseModel}
             systemPrompt=${state.systemPrompt}
             onSendMessage=${onSendMessage}
             onNewChat=${onNewChat}
