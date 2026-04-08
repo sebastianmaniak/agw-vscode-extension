@@ -170,7 +170,10 @@
     "package": "node esbuild.mjs --production",
     "check-types": "tsc --noEmit && tsc --noEmit -p src/webview/tsconfig.json",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "release:patch": "npm version patch -m 'release: v%s' && git push --follow-tags",
+    "release:minor": "npm version minor -m 'release: v%s' && git push --follow-tags",
+    "release:major": "npm version major -m 'release: v%s' && git push --follow-tags"
   },
   "devDependencies": {
     "@types/vscode": "^1.85.0",
