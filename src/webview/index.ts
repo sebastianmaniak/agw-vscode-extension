@@ -400,6 +400,7 @@ function App() {
             activeGateway=${state.activeGateway}
             codeContexts=${state.codeContexts}
             tokenTotals=${state.tokenTotals}
+            activeOverlay=${state.overlay}
             onSendMessage=${onSendMessage}
             onNewChat=${onNewChat}
             onSelectModel=${onSelectModel}

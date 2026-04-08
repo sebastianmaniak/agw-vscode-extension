@@ -7,6 +7,8 @@ import { MessageBubble } from './MessageBubble';
 
 const html = htm.bind(h);
 
+type Overlay = 'none' | 'history' | 'systemPrompt' | 'templates';
+
 interface ChatPanelProps {
   messages: UIMessage[];
   models: string[];
@@ -19,6 +21,7 @@ interface ChatPanelProps {
   activeGateway: string;
   codeContexts: CodeContext[];
   tokenTotals: { prompt: number; completion: number; total: number };
+  activeOverlay: Overlay;
   onSendMessage: (content: string) => void;
   onNewChat: () => void;
   onSelectModel: (model: string) => void;
@@ -30,6 +33,18 @@ interface ChatPanelProps {
   onShowSystemPrompt: () => void;
   onShowTemplates: () => void;
   onExportChat: () => void;
+}
+
+function getDateLabel(index: number, messages: UIMessage[]): string | null {
+  if (index === 0) return 'Today';
+  // Group by role transitions: show separator when switching from assistant back to user
+  // after a gap (simulates conversation clusters)
+  const prev = messages[index - 1];
+  const curr = messages[index];
+  if (prev.role !== 'user' && curr.role === 'user' && index > 2) {
+    return '';  // empty string = thin divider, no label
+  }
+  return null;
 }
 
 export function ChatPanel(props: ChatPanelProps) {
@@ -117,6 +132,8 @@ export function ChatPanel(props: ChatPanelProps) {
   };
 
   const hasMultipleGateways = props.gateways.length > 1;
+  const isMac = navigator.platform.indexOf('Mac') >= 0;
+  const mod = isMac ? 'Cmd' : 'Ctrl';
 
   return html`
     <div class="chat-panel">
@@ -126,9 +143,24 @@ export function ChatPanel(props: ChatPanelProps) {
             <p>Send a message to start chatting through agentgateway.</p>
           </div>
         `}
-        ${props.messages.map((msg) => html`
-          <${MessageBubble} key=${msg.id} message=${msg} />
-        `)}
+        ${props.messages.map((msg, i) => {
+          const label = getDateLabel(i, props.messages);
+          return html`
+            ${label !== null && html`
+              <div class="message-divider">
+                ${label && html`<span class="message-divider-label">${label}</span>`}
+              </div>
+            `}
+            <${MessageBubble} key=${msg.id} message=${msg} />
+          `;
+        })}
+        ${props.streaming && html`
+          <div class="typing-indicator">
+            <span class="typing-dot" />
+            <span class="typing-dot" />
+            <span class="typing-dot" />
+          </div>
+        `}
         <div ref=${messagesEndRef} />
       </div>
 
@@ -163,15 +195,6 @@ export function ChatPanel(props: ChatPanelProps) {
                   <div class="action-menu">
                     <button class="menu-item" onClick=${() => menuAction(props.onNewChat)}>
                       <span class="menu-icon">💬</span> New Chat
-                    </button>
-                    <button class="menu-item" onClick=${() => menuAction(props.onShowHistory)}>
-                      <span class="menu-icon">📋</span> History
-                    </button>
-                    <button class="menu-item" onClick=${() => menuAction(props.onShowSystemPrompt)}>
-                      <span class="menu-icon">⚙</span> System Prompt${props.systemPrompt ? ' •' : ''}
-                    </button>
-                    <button class="menu-item" onClick=${() => menuAction(props.onShowTemplates)}>
-                      <span class="menu-icon">📝</span> Templates
                     </button>
                     ${props.messages.length > 0 && html`
                       <button class="menu-item" onClick=${() => menuAction(props.onExportChat)}>
@@ -215,14 +238,36 @@ export function ChatPanel(props: ChatPanelProps) {
                   ${props.currentModel || 'Model'}${' '}↓
                 </button>
               `}
+              <span class="toolbar-divider" />
+              <button
+                class="input-tool-btn nav-btn ${props.activeOverlay === 'history' ? 'active' : ''}"
+                onClick=${props.onShowHistory}
+                title="Conversation history"
+              >
+                <span class="nav-icon">📋</span><span class="nav-label">${' '}History</span>
+              </button>
+              <button
+                class="input-tool-btn nav-btn ${props.activeOverlay === 'systemPrompt' ? 'active' : ''}"
+                onClick=${props.onShowSystemPrompt}
+                title="System prompt"
+              >
+                <span class="nav-icon">⚙</span><span class="nav-label">${' '}System${props.systemPrompt ? ' •' : ''}</span>
+              </button>
+              <button
+                class="input-tool-btn nav-btn ${props.activeOverlay === 'templates' ? 'active' : ''}"
+                onClick=${props.onShowTemplates}
+                title="Prompt templates"
+              >
+                <span class="nav-icon">📝</span><span class="nav-label">${' '}Templates</span>
+              </button>
             </div>
             <button
               class="send-btn-new"
               onClick=${handleSend}
               disabled=${!props.connected || props.streaming || !input.trim()}
-              title="Send message"
+              title="Send message (Enter)"
             >
-              ${props.streaming ? '...' : '↑'}
+              ${props.streaming ? html`<span class="send-spinner" />` : '↑'}
             </button>
           </div>
         </div>
