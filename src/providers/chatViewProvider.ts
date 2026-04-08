@@ -16,6 +16,10 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
   private webviewView?: vscode.WebviewView;
   private pendingMessages: ExtensionToWebviewMessage[] = [];
 
+  private onReconnect?: () => void;
+  private onModelChange?: (model: string) => void;
+  private onRefreshTools?: () => void;
+
   constructor(
     private readonly extensionUri: vscode.Uri,
     private readonly gateway: GatewayClient,
@@ -24,6 +28,18 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     private readonly getModel: () => string,
     private readonly getEnabledTools: () => McpTool[],
   ) {}
+
+  setReconnectHandler(handler: () => void): void {
+    this.onReconnect = handler;
+  }
+
+  setModelChangeHandler(handler: (model: string) => void): void {
+    this.onModelChange = handler;
+  }
+
+  setRefreshToolsHandler(handler: () => void): void {
+    this.onRefreshTools = handler;
+  }
 
   resolveWebviewView(
     webviewView: vscode.WebviewView,
@@ -69,6 +85,10 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         this.sendToWebview({ type: 'conversationCleared' });
         break;
       case 'selectModel':
+        this.onModelChange?.(msg.model);
+        break;
+      case 'refreshTools':
+        this.onRefreshTools?.();
         break;
       case 'testTool':
         await this.handleTestTool(msg.toolName, msg.args);
@@ -76,6 +96,9 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
       case 'toggleTool':
         break;
       case 'inspectTool':
+        break;
+      case 'reconnect':
+        this.onReconnect?.();
         break;
     }
   }

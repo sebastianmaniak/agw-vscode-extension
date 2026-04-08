@@ -131,4 +131,6 @@ export type WebviewToExtensionMessage =
   | { type: 'selectModel'; model: string }
   | { type: 'testTool'; toolName: string; args: Record<string, unknown> }
   | { type: 'toggleTool'; toolName: string; enabled: boolean }
-  | { type: 'inspectTool'; toolName: string };
+  | { type: 'inspectTool'; toolName: string }
+  | { type: 'reconnect' }
+  | { type: 'refreshTools' };

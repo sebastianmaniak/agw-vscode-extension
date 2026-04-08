@@ -52,6 +52,17 @@ export function activate(context: vscode.ExtensionContext) {
     () => currentModel,
     () => tools.filter((t) => toolTreeProvider.isToolEnabled(t.name)),
   );
+  chatProvider.setReconnectHandler(() => connectToGateway());
+  chatProvider.setModelChangeHandler((model) => { currentModel = model; });
+  chatProvider.setRefreshToolsHandler(async () => {
+    try {
+      tools = await mcp.listTools();
+      toolTreeProvider.setTools(tools);
+      chatProvider.sendToWebview({ type: 'toolsLoaded', tools });
+    } catch (e: any) {
+      chatProvider.sendToWebview({ type: 'toolTestResult', result: '', error: e.message });
+    }
+  });
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider('agw-chat', chatProvider),
   );
@@ -76,6 +87,10 @@ export function activate(context: vscode.ExtensionContext) {
     models = await fetchModels(gateway);
     if (!currentModel && models.length > 0) {
       currentModel = models[0].id;
+    }
+    // If no models were fetched but we have a configured default, show it
+    if (models.length === 0 && currentModel) {
+      models = [{ id: currentModel, object: 'model', owned_by: 'configured' }];
     }
     chatProvider.sendToWebview({
       type: 'modelsLoaded',

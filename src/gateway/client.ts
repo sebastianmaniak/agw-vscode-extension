@@ -29,20 +29,32 @@ export class GatewayClient {
     return h;
   }
 
-  private get healthUrl(): string {
-    const url = new URL(this.config.llmEndpoint);
-    url.port = '15021';
-    url.pathname = '/healthz/ready';
-    return url.toString();
-  }
-
   async checkHealth(): Promise<boolean> {
+    // Try dedicated health endpoint first (port 15021)
     try {
-      const res = await fetch(this.healthUrl, {
+      const url = new URL(this.config.llmEndpoint);
+      url.port = '15021';
+      url.pathname = '/healthz/ready';
+      const res = await fetch(url.toString(), {
         method: 'GET',
+        signal: AbortSignal.timeout(3000),
+      });
+      if (res.ok) return true;
+    } catch {
+      // Fall through to LLM endpoint check
+    }
+
+    // Fallback: probe the chat completions endpoint with a minimal request.
+    // Any HTTP response (even 400) means the gateway is reachable.
+    try {
+      const res = await fetch(`${this.llmEndpoint}/v1/chat/completions`, {
+        method: 'POST',
+        headers: this.headers,
+        body: JSON.stringify({ model: '', messages: [] }),
         signal: AbortSignal.timeout(5000),
       });
-      return res.ok;
+      // Any response (200, 400, 422, etc.) means the server is alive
+      return res.status > 0;
     } catch {
       return false;
     }

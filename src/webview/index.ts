@@ -2,9 +2,9 @@ import { h, render } from 'preact';
 import { useState, useEffect } from 'preact/hooks';
 import htm from 'htm';
 import { ChatPanel } from './components/ChatPanel';
+import { McpPlayground } from './components/McpPlayground';
 import type {
   ExtensionToWebviewMessage,
-  Model,
   McpTool,
   ToolCall,
 } from '../types';
@@ -13,14 +13,17 @@ const html = htm.bind(h);
 
 const vscode = acquireVsCodeApi();
 
+type Tab = 'chat' | 'playground';
+
 interface AppState {
   messages: UIMessage[];
-  models: Model[];
+  modelHistory: string[];
   currentModel: string;
   connected: boolean;
   tools: McpTool[];
   streaming: boolean;
   toolTestResult: { result: string; error?: string } | null;
+  tab: Tab;
 }
 
 export interface UIMessage {
@@ -33,15 +36,28 @@ export interface UIMessage {
 }
 
 function App() {
-  const [state, setState] = useState<AppState>({
-    messages: [],
-    models: [],
-    currentModel: '',
-    connected: false,
-    tools: [],
-    streaming: false,
-    toolTestResult: null,
+  const [state, setState] = useState<AppState>(() => {
+    const saved = vscode.getState() as Partial<AppState> | null;
+    return {
+      messages: [],
+      modelHistory: saved?.modelHistory ?? [],
+      currentModel: saved?.currentModel ?? '',
+      connected: false,
+      tools: [],
+      streaming: false,
+      toolTestResult: null,
+      tab: saved?.tab ?? 'chat',
+    };
   });
+
+  // Persist model and tab choices
+  useEffect(() => {
+    vscode.setState({
+      modelHistory: state.modelHistory,
+      currentModel: state.currentModel,
+      tab: state.tab,
+    });
+  }, [state.modelHistory, state.currentModel, state.tab]);
 
   useEffect(() => {
     const handler = (event: MessageEvent<ExtensionToWebviewMessage>) => {
@@ -111,11 +127,14 @@ function App() {
           break;
 
         case 'modelsLoaded':
-          setState((prev) => ({
-            ...prev,
-            models: msg.models,
-            currentModel: msg.current,
-          }));
+          setState((prev) => {
+            const newHistory = [...new Set([...prev.modelHistory, ...msg.models.map(m => m.id)])];
+            return {
+              ...prev,
+              modelHistory: newHistory,
+              currentModel: prev.currentModel || msg.current,
+            };
+          });
           break;
 
         case 'connectionStatus':
@@ -157,21 +176,72 @@ function App() {
   };
 
   const onSelectModel = (model: string) => {
-    setState((prev) => ({ ...prev, currentModel: model }));
+    setState((prev) => ({
+      ...prev,
+      currentModel: model,
+      modelHistory: [...new Set([model, ...prev.modelHistory])],
+    }));
     vscode.postMessage({ type: 'selectModel', model });
   };
 
+  const onReconnect = () => {
+    vscode.postMessage({ type: 'reconnect' });
+  };
+
+  const onTestTool = (toolName: string, args: Record<string, unknown>) => {
+    setState((prev) => ({ ...prev, toolTestResult: null }));
+    vscode.postMessage({ type: 'testTool', toolName, args });
+  };
+
+  const onRefreshTools = () => {
+    vscode.postMessage({ type: 'refreshTools' });
+  };
+
+  const setTab = (tab: Tab) => {
+    setState((prev) => ({ ...prev, tab }));
+  };
+
   return html`
-    <${ChatPanel}
-      messages=${state.messages}
-      models=${state.models}
-      currentModel=${state.currentModel}
-      connected=${state.connected}
-      streaming=${state.streaming}
-      onSendMessage=${onSendMessage}
-      onNewChat=${onNewChat}
-      onSelectModel=${onSelectModel}
-    />
+    <div class="app">
+      <div class="tab-bar">
+        <button
+          class="tab-btn ${state.tab === 'chat' ? 'active' : ''}"
+          onClick=${() => setTab('chat')}
+        >
+          Chat
+        </button>
+        <button
+          class="tab-btn ${state.tab === 'playground' ? 'active' : ''}"
+          onClick=${() => setTab('playground')}
+        >
+          MCP Playground${state.tools.length > 0 ? ` (${state.tools.length})` : ''}
+        </button>
+      </div>
+
+      ${state.tab === 'chat' && html`
+        <${ChatPanel}
+          messages=${state.messages}
+          models=${state.modelHistory}
+          currentModel=${state.currentModel}
+          connected=${state.connected}
+          streaming=${state.streaming}
+          onSendMessage=${onSendMessage}
+          onNewChat=${onNewChat}
+          onSelectModel=${onSelectModel}
+          onReconnect=${onReconnect}
+        />
+      `}
+
+      ${state.tab === 'playground' && html`
+        <${McpPlayground}
+          tools=${state.tools}
+          connected=${state.connected}
+          onTestTool=${onTestTool}
+          onRefreshTools=${onRefreshTools}
+          testResult=${state.toolTestResult}
+        />
+      `}
+    </div>
   `;
 }
 

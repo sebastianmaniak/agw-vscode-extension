@@ -8,6 +8,7 @@ export async function fetchModels(client: GatewayClient): Promise<Model[]> {
     );
     return res.data ?? [];
   } catch {
+    // agentgateway may not support GET /v1/models — return empty
     return [];
   }
 }

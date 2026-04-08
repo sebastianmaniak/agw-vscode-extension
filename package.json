@@ -56,12 +56,12 @@
       {
         "command": "agw.toggleTool",
         "title": "Toggle Tool for Chat",
-        "category": "AgentGateway"
+        "category": "agentgateway"
       },
       {
         "command": "agw.inspectTool",
         "title": "Inspect Tool",
-        "category": "AgentGateway"
+        "category": "agentgateway"
       }
     ],
     "menus": {
@@ -89,22 +89,22 @@
         "agw.llmEndpoint": {
           "type": "string",
           "default": "http://localhost:8080",
-          "description": "URL of the AgentGateway LLM listener (OpenAI-compatible API)"
+          "description": "URL of the agentgateway LLM listener (OpenAI-compatible API)"
         },
         "agw.mcpEndpoint": {
           "type": "string",
           "default": "http://localhost:3000",
-          "description": "URL of the AgentGateway MCP listener"
+          "description": "URL of the agentgateway MCP listener"
         },
         "agw.apiKey": {
           "type": "string",
           "default": "",
-          "description": "API key for authenticated AgentGateway instances"
+          "description": "API key for authenticated agentgateway instances"
         },
         "agw.defaultModel": {
           "type": "string",
           "default": "",
-          "description": "Default LLM model to use for chat (leave empty to pick from available models)"
+          "description": "Default LLM model to use for chat (leave empty to type any model name)"
         }
       }
     }

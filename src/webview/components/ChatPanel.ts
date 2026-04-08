@@ -2,7 +2,6 @@ import { h } from 'preact';
 import { useRef, useEffect, useState } from 'preact/hooks';
 import htm from 'htm';
 import type { UIMessage } from '../index';
-import type { Model } from '../../types';
 import { MessageBubble } from './MessageBubble';
 import { ModelSelector } from './ModelSelector';
 
@@ -10,13 +9,14 @@ const html = htm.bind(h);
 
 interface ChatPanelProps {
   messages: UIMessage[];
-  models: Model[];
+  models: string[];
   currentModel: string;
   connected: boolean;
   streaming: boolean;
   onSendMessage: (content: string) => void;
   onNewChat: () => void;
   onSelectModel: (model: string) => void;
+  onReconnect: () => void;
 }
 
 export function ChatPanel(props: ChatPanelProps) {
@@ -61,7 +61,10 @@ export function ChatPanel(props: ChatPanelProps) {
           onSelect=${props.onSelectModel}
         />
         <div class="header-right">
-          <span class="connection-dot ${props.connected ? 'connected' : 'disconnected'}" />
+          <button class="icon-btn connect-btn ${props.connected ? 'connected' : ''}" onClick=${props.onReconnect} title=${props.connected ? 'Reconnect' : 'Connect to agentgateway'}>
+            <span class="connection-dot ${props.connected ? 'connected' : 'disconnected'}" />
+            ${props.connected ? 'Connected' : 'Connect'}
+          </button>
           <button class="icon-btn" onClick=${props.onNewChat} title="New Chat">
             New
           </button>

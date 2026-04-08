@@ -20,7 +20,7 @@ export class McpClient {
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      'Accept': 'application/json, text/event-stream',
     };
     if (this.sessionId) {
       headers['Mcp-Session-Id'] = this.sessionId;
@@ -41,7 +41,48 @@ export class McpClient {
       this.sessionId = sid;
     }
 
+    const contentType = res.headers.get('content-type') ?? '';
+
+    // If server responds with SSE, read the stream and extract the JSON-RPC response
+    if (contentType.includes('text/event-stream')) {
+      return this.readSseResponse(res);
+    }
+
     return res.json() as Promise<McpJsonRpcResponse>;
+  }
+
+  private async readSseResponse(res: Response): Promise<McpJsonRpcResponse> {
+    const reader = res.body!.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let lastData: McpJsonRpcResponse | null = null;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6).trim();
+          if (data) {
+            try {
+              lastData = JSON.parse(data);
+            } catch {
+              // skip non-JSON data lines
+            }
+          }
+        }
+      }
+    }
+
+    if (!lastData) {
+      throw new Error('MCP SSE stream ended without a JSON-RPC response');
+    }
+    return lastData;
   }
 
   private async notify(method: string, params?: Record<string, unknown>): Promise<void> {
@@ -53,6 +94,7 @@ export class McpClient {
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      'Accept': 'application/json, text/event-stream',
     };
     if (this.sessionId) {
       headers['Mcp-Session-Id'] = this.sessionId;
@@ -81,7 +123,14 @@ export class McpClient {
     return this.listTools();
   }
 
+  get isConnected(): boolean {
+    return this.sessionId !== null;
+  }
+
   async listTools(): Promise<McpTool[]> {
+    if (!this.sessionId) {
+      return this.connect();
+    }
     const result = await this.rpc('tools/list');
     if (result.error) {
       throw new Error(`MCP tools/list failed: ${result.error.message}`);

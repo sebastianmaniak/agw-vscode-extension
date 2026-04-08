@@ -2,8 +2,11 @@ src/**
 test/**
 node_modules/**
 .vscode/**
+.claude/**
+.git/**
 .gitignore
 tsconfig.json
 esbuild.mjs
+vitest.config.ts
 **/*.map
 docs/**

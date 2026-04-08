@@ -25,7 +25,38 @@ body {
 
 #root { height: 100%; }
 
-.chat-panel { display: flex; flex-direction: column; height: 100%; }
+/* ---- App layout ---- */
+
+.app { display: flex; flex-direction: column; height: 100%; }
+
+/* ---- Tabs ---- */
+
+.tab-bar {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--fg);
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  opacity: 0.6;
+  border-bottom: 2px solid transparent;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+
+.tab-btn:hover { opacity: 0.8; }
+.tab-btn.active { opacity: 1; border-bottom-color: var(--btn-bg); }
+
+/* ---- Chat Panel ---- */
+
+.chat-panel { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 
 .chat-header {
   display: flex;
@@ -38,15 +69,37 @@ body {
 
 .header-right { display: flex; align-items: center; gap: 8px; }
 
-.model-selector {
+/* ---- Model selector ---- */
+
+.model-display {
   background: var(--input-bg);
   color: var(--input-fg);
   border: 1px solid var(--input-border);
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: 4px;
   font-size: 12px;
+  cursor: pointer;
   max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+.model-display:hover { border-color: var(--vscode-focusBorder); }
+
+.model-combo { display: flex; }
+
+.model-input {
+  background: var(--input-bg);
+  color: var(--input-fg);
+  border: 1px solid var(--vscode-focusBorder);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  width: 200px;
+  outline: none;
+}
+
+/* ---- Connection button ---- */
 
 .connection-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 .connection-dot.connected { background: #4caf50; }
@@ -65,6 +118,12 @@ body {
   gap: 4px;
 }
 .icon-btn:hover { background: var(--vscode-toolbar-hoverBackground); }
+.icon-btn.small { font-size: 11px; padding: 2px 6px; }
+
+.connect-btn { font-weight: 600; }
+.connect-btn:not(.connected) { color: var(--vscode-errorForeground); }
+
+/* ---- Messages ---- */
 
 .messages {
   flex: 1;
@@ -129,6 +188,8 @@ body {
   51%, 100% { opacity: 0; }
 }
 
+/* ---- Tool cards (chat) ---- */
+
 .tool-card {
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -157,6 +218,8 @@ body {
   max-height: 200px;
   overflow-y: auto;
 }
+
+/* ---- Input area ---- */
 
 .input-area {
   display: flex;
@@ -200,6 +263,231 @@ body {
 .send-btn:hover:not(:disabled) { background: var(--btn-hover); }
 .send-btn:disabled { opacity: 0.5; cursor: default; }
 
+/* ---- MCP Playground ---- */
+
+.playground { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+
+.playground-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.playground-title { font-weight: 600; font-size: 13px; }
+
+.playground-notice {
+  padding: 12px;
+  text-align: center;
+  opacity: 0.6;
+  font-size: 12px;
+}
+
+.playground-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.playground-tools {
+  width: 220px;
+  min-width: 180px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.playground-search {
+  background: var(--input-bg);
+  color: var(--input-fg);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 8px 10px;
+  font-size: 12px;
+  outline: none;
+}
+.playground-search:focus { border-bottom-color: var(--vscode-focusBorder); }
+
+.tool-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.tool-list-empty {
+  padding: 16px 12px;
+  opacity: 0.5;
+  text-align: center;
+  font-size: 12px;
+}
+
+.tool-list-item {
+  padding: 8px 10px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+.tool-list-item:hover { background: var(--vscode-list-hoverBackground); }
+.tool-list-item.selected { background: var(--vscode-list-activeSelectionBackground); color: var(--vscode-list-activeSelectionForeground); }
+
+.tool-list-name {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tool-list-desc {
+  font-size: 11px;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+.tool-list-item.selected .tool-list-desc { opacity: 0.85; }
+
+/* ---- Playground detail ---- */
+
+.playground-detail {
+  flex: 1;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.playground-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  opacity: 0.5;
+  font-size: 13px;
+}
+
+.playground-tool-detail { padding: 12px; }
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.detail-name { font-size: 14px; font-weight: 700; margin: 0; }
+.detail-server {
+  font-size: 11px;
+  opacity: 0.6;
+  padding: 2px 6px;
+  background: var(--tool-bg);
+  border-radius: 3px;
+}
+
+.detail-desc { font-size: 12px; opacity: 0.8; margin-bottom: 16px; line-height: 1.4; }
+
+.detail-section { margin-bottom: 16px; }
+
+.detail-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-no-params {
+  font-size: 12px;
+  opacity: 0.5;
+  font-style: italic;
+}
+
+.detail-actions { margin-bottom: 16px; }
+
+.detail-response {
+  background: var(--vscode-textCodeBlock-background);
+  padding: 12px;
+  border-radius: 6px;
+  font-family: var(--vscode-editor-font-family);
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+}
+.detail-response.error { border-color: var(--vscode-errorForeground); color: var(--vscode-errorForeground); }
+
+.detail-schema {
+  background: var(--vscode-textCodeBlock-background);
+  padding: 12px;
+  border-radius: 6px;
+  font-family: var(--vscode-editor-font-family);
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+  opacity: 0.7;
+}
+
+/* ---- Param fields ---- */
+
+.param-field { margin-bottom: 12px; }
+
+.param-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.param-required { color: var(--vscode-errorForeground); margin-left: 2px; }
+
+.param-hint {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.param-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.param-json {
+  font-family: var(--vscode-editor-font-family);
+  font-size: 11px;
+  resize: vertical;
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  background: var(--input-bg);
+  color: var(--input-fg);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+}
+
+.form-input:focus,
+.form-select:focus { outline: none; border-color: var(--vscode-focusBorder); }
+
+/* ---- Legacy tool test form (keep for compat) ---- */
+
 .tool-test-form { border: 1px solid var(--border); border-radius: 6px; margin: 12px; overflow: hidden; }
 
 .tool-test-header {
@@ -218,21 +506,6 @@ body {
 .form-field { margin-bottom: 12px; }
 .form-label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
 .form-hint { font-weight: normal; opacity: 0.6; margin-left: 4px; }
-
-.form-input,
-.form-select {
-  width: 100%;
-  background: var(--input-bg);
-  color: var(--input-fg);
-  border: 1px solid var(--input-border);
-  border-radius: 4px;
-  padding: 6px 8px;
-  font-family: var(--vscode-font-family);
-  font-size: var(--vscode-font-size);
-}
-
-.form-input:focus,
-.form-select:focus { outline: none; border-color: var(--vscode-focusBorder); }
 .form-checkbox { margin: 4px 0; }
 
 .tool-test-result { margin-top: 12px; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
