@@ -2,7 +2,7 @@
   "name": "agw-vscode",
   "displayName": "agentgateway",
   "description": "AI chat and MCP tool browser for agentgateway",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "solo-io",
   "license": "Apache-2.0",
   "repository": {
@@ -13,7 +13,10 @@
   "engines": {
     "vscode": "^1.85.0"
   },
-  "categories": ["AI", "Chat"],
+  "categories": [
+    "AI",
+    "Chat"
+  ],
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
@@ -138,10 +141,18 @@
           "items": {
             "type": "object",
             "properties": {
-              "id": { "type": "string", "description": "Model identifier (e.g., gpt-4o)" },
-              "provider": { "type": "string", "description": "Provider name (e.g., OpenAI, Anthropic)" }
+              "id": {
+                "type": "string",
+                "description": "Model identifier (e.g., gpt-4o)"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Provider name (e.g., OpenAI, Anthropic)"
+              }
             },
-            "required": ["id"]
+            "required": [
+              "id"
+            ]
           },
           "description": "Preset model list with optional provider labels for quick switching"
         },
@@ -151,13 +162,32 @@
           "items": {
             "type": "object",
             "properties": {
-              "name": { "type": "string", "description": "Display name for this gateway (e.g., Production, Staging)" },
-              "llmEndpoint": { "type": "string", "description": "URL of the LLM listener" },
-              "mcpEndpoint": { "type": "string", "description": "URL of the MCP listener" },
-              "apiKey": { "type": "string", "description": "API key for this gateway" },
-              "defaultModel": { "type": "string", "description": "Default model for this gateway" }
+              "name": {
+                "type": "string",
+                "description": "Display name for this gateway (e.g., Production, Staging)"
+              },
+              "llmEndpoint": {
+                "type": "string",
+                "description": "URL of the LLM listener"
+              },
+              "mcpEndpoint": {
+                "type": "string",
+                "description": "URL of the MCP listener"
+              },
+              "apiKey": {
+                "type": "string",
+                "description": "API key for this gateway"
+              },
+              "defaultModel": {
+                "type": "string",
+                "description": "Default model for this gateway"
+              }
             },
-            "required": ["name", "llmEndpoint", "mcpEndpoint"]
+            "required": [
+              "name",
+              "llmEndpoint",
+              "mcpEndpoint"
+            ]
           },
           "description": "Multiple agentgateway instances to switch between (each with their own LLM and MCP endpoints)"
         }
