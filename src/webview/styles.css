@@ -192,7 +192,7 @@ body {
   border: 1px solid var(--input-border);
   border-radius: 10px;
   background: var(--input-bg);
-  overflow: hidden;
+  position: relative;
 }
 .input-box:focus-within { border-color: var(--vscode-focusBorder); }
 
