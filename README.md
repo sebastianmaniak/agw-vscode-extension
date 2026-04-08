@@ -47,9 +47,6 @@
 
 ## Features at a Glance
 
-![Uploading agw-vscode.gif…]()
-
-
 ### Chat
 | | |
 |---|---|
