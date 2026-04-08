@@ -1,6 +1,12 @@
-# agentgateway for VS Code
+<p align="center">
+  <img src="resources/agw-icon.png" alt="agentgateway logo" width="128">
+</p>
 
-AI chat, MCP tool playground, resource browser, and A2A agent testing for [agentgateway](https://agentgateway.dev).
+<h1 align="center">agentgateway for VS Code</h1>
+
+<p align="center">
+  AI chat, MCP tool playground, resource browser, and A2A agent testing for <a href="https://agentgateway.dev">agentgateway</a>.
+</p>
 
 ## Features
 
@@ -16,6 +22,8 @@ AI chat, MCP tool playground, resource browser, and A2A agent testing for [agent
 - **Model Presets** — Configure model presets with provider labels in settings
 - **Tool Use in Chat** — The LLM automatically invokes MCP tools during conversations (agentic loop)
 - **Syntax Highlighting** — VS Code theme-aware code highlighting in assistant messages
+- **Multi-Gateway Profiles** — Configure multiple agentgateway instances and switch between them
+- **Code Context** — Send editor selections to chat with `Cmd+L`; shown as dismissible chips
 - **Connection Management** — Connect/reconnect button; works with local or remote (k8s) instances
 
 ## Prerequisites
@@ -35,6 +43,7 @@ A running [agentgateway](https://github.com/agentgateway/agentgateway) instance 
    - **`agw.apiKey`** — API key if your gateway requires authentication
    - **`agw.defaultModel`** — Default model name (optional; you can type it in the chat)
    - **`agw.modelPresets`** — Array of `{ "id": "model-name", "provider": "OpenAI" }` for quick model switching
+   - **`agw.gateways`** — Array of additional gateway profiles (see below)
 4. Click the agentgateway icon in the Activity Bar
 5. Click **Connect** in the chat header
 6. Start chatting, or explore the **Tools**, **Resources**, and **A2A** tabs
@@ -50,6 +59,28 @@ agentgateway -f agw-config.yaml
 ```bash
 kubectl port-forward svc/agentgateway 8080:8080 -n <namespace>
 ```
+
+### Multiple Gateways
+
+To switch between multiple agentgateway instances, add profiles in settings:
+
+```json
+"agw.gateways": [
+  {
+    "name": "Production",
+    "llmEndpoint": "https://prod-gw.example.com:8080",
+    "mcpEndpoint": "https://prod-gw.example.com:3000",
+    "apiKey": "prod-key"
+  },
+  {
+    "name": "Staging",
+    "llmEndpoint": "http://staging:8080",
+    "mcpEndpoint": "http://staging:3000"
+  }
+]
+```
+
+The default `agw.llmEndpoint` / `agw.mcpEndpoint` settings become the "Default" profile. A gateway dropdown appears in the input toolbar when multiple profiles are configured.
 
 ### Tabs
 
@@ -117,7 +148,7 @@ src/
     ├── index.ts              # Preact app with 4 tabs + overlays
     ├── styles.css            # VS Code theme-aware styles
     └── components/
-        ├── ChatPanel.ts      # Chat UI with toolbar
+        ├── ChatPanel.ts      # Chat UI with Cursor-style input bar
         ├── McpPlayground.ts  # MCP tool testing
         ├── ResourceBrowser.ts # MCP resource viewer
         ├── A2aPlayground.ts  # A2A agent testing
@@ -125,7 +156,6 @@ src/
         ├── SystemPromptEditor.ts # System prompt config
         ├── PromptTemplates.ts # Saved prompt templates
         ├── MessageBubble.ts  # Markdown message rendering
-        ├── ModelSelector.ts  # Editable model combo box
         └── ToolCallCard.ts   # Tool call/result cards
 ```
 
