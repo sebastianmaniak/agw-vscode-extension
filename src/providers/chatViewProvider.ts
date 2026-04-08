@@ -8,6 +8,7 @@ import type {
   ToolCall,
   PromptTemplate,
   ChatCompletionChunk,
+  TokenUsage,
   ExtensionToWebviewMessage,
   WebviewToExtensionMessage,
   A2aAgentCardInfo,
@@ -214,6 +215,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     let toolCalls: ToolCall[] = [];
     const toolCallArgs: Map<number, string> = new Map();
     let responseModel = '';
+    let usage: TokenUsage | undefined;
 
     // Build messages with system prompt prepended
     const systemPrompt = this.getSystemPrompt();
@@ -230,6 +232,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         chatTools,
         (chunk: ChatCompletionChunk) => {
           if (chunk.model) { responseModel = chunk.model; }
+          if (chunk.usage) { usage = chunk.usage; }
           const choice = chunk.choices[0];
           if (!choice) return;
 
@@ -303,7 +306,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         await this.runCompletionLoop(chatTools);
       } else {
         this.conversation.addAssistantMessage(assistantContent);
-        this.sendToWebview({ type: 'streamEnd', responseModel });
+        this.sendToWebview({ type: 'streamEnd', responseModel, usage });
       }
     } catch (e: any) {
       this.sendToWebview({ type: 'streamError', error: e.message });

@@ -88,7 +88,14 @@ export function MessageBubble({ message }: MessageBubbleProps) {
 
   return html`
     <div class="message ${isUser ? 'message-user' : 'message-assistant'}">
-      <div class="message-label">${isUser ? 'You' : 'Assistant'}</div>
+      <div class="message-label">
+        ${isUser ? 'You' : 'Assistant'}
+        ${!isUser && message.usage && html`
+          <span class="message-tokens" title=${`Prompt: ${message.usage.prompt_tokens} | Completion: ${message.usage.completion_tokens}`}>
+            ${message.usage.total_tokens.toLocaleString()} tok
+          </span>
+        `}
+      </div>
       <div
         ref=${contentRef}
         class="message-content"

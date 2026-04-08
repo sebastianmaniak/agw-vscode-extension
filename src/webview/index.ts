@@ -13,6 +13,7 @@ import type {
   McpTool,
   McpResource,
   ToolCall,
+  TokenUsage,
   ConversationSummary,
   PromptTemplate,
   ChatMessage,
@@ -43,6 +44,7 @@ interface AppState {
   gateways: GatewayProfile[];
   activeGateway: string;
   codeContexts: CodeContext[];
+  tokenTotals: { prompt: number; completion: number; total: number };
   tab: Tab;
   overlay: Overlay;
   conversations: ConversationSummary[];
@@ -57,6 +59,7 @@ export interface UIMessage {
   toolCall?: ToolCall;
   toolCallId?: string;
   streaming?: boolean;
+  usage?: TokenUsage;
 }
 
 export interface CodeContext {
@@ -106,6 +109,7 @@ function App() {
       gateways: [],
       activeGateway: 'Default',
       codeContexts: [],
+      tokenTotals: { prompt: 0, completion: 0, total: 0 },
       tab: saved?.tab ?? 'chat',
       overlay: 'none',
       conversations: [],
@@ -144,13 +148,21 @@ function App() {
           setState((prev) => {
             const newState = {
               ...prev,
-              messages: prev.messages.map((m) => m.streaming ? { ...m, streaming: false } : m),
+              messages: prev.messages.map((m) => m.streaming ? { ...m, streaming: false, usage: msg.usage } : m),
               streaming: false,
             };
             // Update model history with the actual response model
             if (msg.responseModel && msg.responseModel !== prev.currentModel) {
               newState.modelHistory = [...new Set([msg.responseModel, ...prev.modelHistory])];
               newState.responseModel = msg.responseModel;
+            }
+            // Accumulate token totals
+            if (msg.usage) {
+              newState.tokenTotals = {
+                prompt: prev.tokenTotals.prompt + msg.usage.prompt_tokens,
+                completion: prev.tokenTotals.completion + msg.usage.completion_tokens,
+                total: prev.tokenTotals.total + msg.usage.total_tokens,
+              };
             }
             return newState;
           });
@@ -199,7 +211,7 @@ function App() {
           break;
 
         case 'conversationCleared':
-          setState((prev) => ({ ...prev, messages: [], streaming: false }));
+          setState((prev) => ({ ...prev, messages: [], streaming: false, tokenTotals: { prompt: 0, completion: 0, total: 0 } }));
           break;
 
         case 'conversationList':
@@ -387,6 +399,7 @@ function App() {
             gateways=${state.gateways}
             activeGateway=${state.activeGateway}
             codeContexts=${state.codeContexts}
+            tokenTotals=${state.tokenTotals}
             onSendMessage=${onSendMessage}
             onNewChat=${onNewChat}
             onSelectModel=${onSelectModel}

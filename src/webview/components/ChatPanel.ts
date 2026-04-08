@@ -18,6 +18,7 @@ interface ChatPanelProps {
   gateways: GatewayProfile[];
   activeGateway: string;
   codeContexts: CodeContext[];
+  tokenTotals: { prompt: number; completion: number; total: number };
   onSendMessage: (content: string) => void;
   onNewChat: () => void;
   onSelectModel: (model: string) => void;
@@ -234,8 +235,20 @@ export function ChatPanel(props: ChatPanelProps) {
           ${props.responseModel && props.responseModel !== props.currentModel && html`
             <span class="status-model-badge" title="Actual model used">${props.responseModel}</span>
           `}
+          <span class="status-spacer" />
+          ${props.tokenTotals.total > 0 && html`
+            <span class="token-stats" title=${`Prompt: ${props.tokenTotals.prompt.toLocaleString()}\nCompletion: ${props.tokenTotals.completion.toLocaleString()}\nTotal: ${props.tokenTotals.total.toLocaleString()}`}>
+              ${formatTokens(props.tokenTotals.total)} tokens
+            </span>
+          `}
         </div>
       </div>
     </div>
   `;
+}
+
+function formatTokens(n: number): string {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+  if (n >= 1_000) return (n / 1_000).toFixed(1) + 'k';
+  return n.toString();
 }

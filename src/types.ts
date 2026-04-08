@@ -22,6 +22,14 @@ export interface AgwConfig {
   gateways: GatewayProfile[];
 }
 
+// --- Token usage ---
+
+export interface TokenUsage {
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+}
+
 // --- OpenAI-compatible API types ---
 
 export interface ChatMessage {
@@ -44,6 +52,7 @@ export interface ChatCompletionRequest {
   model: string;
   messages: ChatMessage[];
   stream?: boolean;
+  stream_options?: { include_usage: boolean };
   tools?: ChatTool[];
 }
 
@@ -59,6 +68,7 @@ export interface ChatTool {
 export interface ChatCompletionChunk {
   id: string;
   model?: string;
+  usage?: TokenUsage;
   choices: Array<{
     index: number;
     delta: {
@@ -147,7 +157,7 @@ export interface ConversationSummary {
 
 export type ExtensionToWebviewMessage =
   | { type: 'streamChunk'; content: string }
-  | { type: 'streamEnd'; responseModel?: string }
+  | { type: 'streamEnd'; responseModel?: string; usage?: TokenUsage }
   | { type: 'streamError'; error: string }
   | { type: 'toolCallStart'; toolCall: ToolCall }
   | { type: 'toolCallResult'; toolCallId: string; result: string }

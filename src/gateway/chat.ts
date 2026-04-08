@@ -33,6 +33,7 @@ export async function streamChatCompletion(
     model,
     messages,
     stream: true,
+    stream_options: { include_usage: true },
   };
   if (tools.length > 0) {
     body.tools = tools;
