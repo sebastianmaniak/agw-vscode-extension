@@ -1,173 +1,223 @@
 <p align="center">
-  <img src="resources/agw-icon.png" alt="agentgateway logo" width="128">
+  <img src="resources/agw-icon.png" alt="agentgateway logo" width="120">
 </p>
 
 <h1 align="center">agentgateway for VS Code</h1>
 
 <p align="center">
-  AI chat, MCP tool playground, resource browser, and A2A agent testing for <a href="https://agentgateway.dev">agentgateway</a>.
+  <strong>The developer interface for <a href="https://agentgateway.dev">agentgateway</a></strong><br>
+  Chat with any LLM. Test MCP tools. Browse resources. Run A2A agents.<br>
+  All from your editor sidebar.
 </p>
 
-## Features
+<p align="center">
+  <a href="https://github.com/agentgateway/agentgateway"><img src="https://img.shields.io/badge/agentgateway-Linux%20Foundation-blueviolet" alt="Linux Foundation"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue" alt="License"></a>
+  <img src="https://img.shields.io/badge/VS%20Code-1.85%2B-007ACC" alt="VS Code">
+  <img src="https://img.shields.io/badge/Cursor-compatible-green" alt="Cursor">
+</p>
 
-- **Streaming AI Chat** — Chat with any LLM through agentgateway's OpenAI-compatible API with real-time streaming
-- **MCP Playground** — Discover, inspect, and test MCP tools with dynamic forms, sample generation, and response display
-- **MCP Resource Browser** — Browse and read MCP resources exposed through agentgateway
-- **A2A Agent Testing** — Fetch agent cards, view skills, and send tasks via Google's Agent-to-Agent protocol
-- **Conversation History** — Auto-saves chats; browse, resume, and delete past conversations
-- **System Prompt** — Set a persistent system prompt prepended to every conversation
-- **Prompt Templates** — Save and reuse common prompts with one-click insertion
-- **Chat Export** — Export conversations as markdown files
-- **Editable Model Selector** — Type any model name or pick from history; persists across sessions
-- **Model Presets** — Configure model presets with provider labels in settings
-- **Tool Use in Chat** — The LLM automatically invokes MCP tools during conversations (agentic loop)
-- **Syntax Highlighting** — VS Code theme-aware code highlighting in assistant messages
-- **Multi-Gateway Profiles** — Configure multiple agentgateway instances and switch between them
-- **Code Context** — Send editor selections to chat with `Cmd+L`; shown as dismissible chips
-- **Connection Management** — Connect/reconnect button; works with local or remote (k8s) instances
+---
 
-## Prerequisites
+## Why?
 
-A running [agentgateway](https://github.com/agentgateway/agentgateway) instance with:
-- An LLM listener configured (OpenAI-compatible API)
-- Optionally, an MCP listener (Streamable HTTP) for tool discovery and execution
-- Optionally, an A2A listener for agent-to-agent communication
+**[agentgateway](https://github.com/agentgateway/agentgateway)** is a Linux Foundation project that acts as a unified proxy for AI agent communication — routing to any LLM provider, orchestrating MCP tools, and enabling agent-to-agent collaboration.
 
-## Getting Started
+**This extension brings all of that into your editor.** Instead of switching between terminals, curl commands, and web UIs to test your gateway setup, you get a native VS Code experience with streaming chat, interactive tool testing, and live resource browsing.
 
-1. Install the extension (see [Local Development](#local-development) to build from source)
-2. Open VS Code Settings (`Cmd+,` / `Ctrl+,`) and search for `agw`
-3. Configure:
-   - **`agw.llmEndpoint`** — URL of your agentgateway LLM listener (e.g., `http://localhost:8080/openai`)
-   - **`agw.mcpEndpoint`** — URL of your agentgateway MCP listener (e.g., `http://localhost:8080/mcp`)
-   - **`agw.apiKey`** — API key if your gateway requires authentication
-   - **`agw.defaultModel`** — Default model name (optional; you can type it in the chat)
-   - **`agw.modelPresets`** — Array of `{ "id": "model-name", "provider": "OpenAI" }` for quick model switching
-   - **`agw.gateways`** — Array of additional gateway profiles (see below)
-4. Click the agentgateway icon in the Activity Bar
-5. Click **Connect** in the chat header
-6. Start chatting, or explore the **Tools**, **Resources**, and **A2A** tabs
+**One extension. Every provider. Every tool. Every agent.**
 
-### Connecting to agentgateway
+---
 
-**Local instance:**
+## Highlights
+
+**Talk to any LLM** — OpenAI, Anthropic, Google, Mistral, local models — whatever your gateway routes to. Stream responses in real time with full markdown rendering and syntax highlighting.
+
+**Test MCP tools without writing code** — The playground auto-generates forms from tool schemas. Fill in parameters, hit execute, see results. No curl, no scripts.
+
+**Switch gateways instantly** — Dev, staging, production — configure multiple agentgateway instances and switch between them from the chat toolbar. No restart needed.
+
+**Track what you spend** — Per-message and per-conversation token counts, right in the chat. Know exactly how many tokens each interaction costs.
+
+**Send code to chat** — Select code in your editor, hit `Cmd+L`, and it appears as a dismissible context chip in the chat. Ask the LLM about it, get explanations, request changes.
+
+**Agentic tool loops** — The LLM doesn't just respond — it can invoke MCP tools, get results, and continue reasoning. Full agentic loop, visible in the chat with collapsible tool call cards.
+
+---
+
+## Features at a Glance
+
+### Chat
+| | |
+|---|---|
+| **Streaming responses** | Real-time SSE streaming with markdown + code highlighting |
+| **Agentic tool use** | LLM invokes MCP tools automatically during conversation |
+| **Token tracking** | Per-message badges + session totals in the status bar |
+| **Conversation history** | Auto-save, browse, resume, delete past chats |
+| **System prompt** | Persistent system prompt for every conversation |
+| **Prompt templates** | Save and reuse common prompts |
+| **Code context** | `Cmd+L` sends editor selections as dismissible chips |
+| **Chat export** | Export conversations as markdown |
+
+### Tools & Resources
+| | |
+|---|---|
+| **MCP Playground** | Browse tools, auto-generated test forms, execute and inspect results |
+| **Resource Browser** | List and read MCP resources with content preview |
+| **A2A Testing** | Fetch agent cards, view skills, send tasks via Agent-to-Agent protocol |
+
+### Configuration
+| | |
+|---|---|
+| **Multi-gateway profiles** | Switch between dev/staging/prod gateways from the toolbar |
+| **Editable model selector** | Type any model name or pick from history |
+| **Model presets** | Pre-configure models with provider labels |
+| **Auto-connect** | Detects gateway on launch, reconnect with one click |
+
+---
+
+## Quick Start
+
+### 1. Start agentgateway
+
 ```bash
+# Local
 agentgateway -f agw-config.yaml
-```
 
-**Kubernetes (port-forward):**
-```bash
+# Or via Kubernetes
 kubectl port-forward svc/agentgateway 8080:8080 -n <namespace>
 ```
 
-### Multiple Gateways
-
-To switch between multiple agentgateway instances, add profiles in settings:
-
-```json
-"agw.gateways": [
-  {
-    "name": "Production",
-    "llmEndpoint": "https://prod-gw.example.com:8080",
-    "mcpEndpoint": "https://prod-gw.example.com:3000",
-    "apiKey": "prod-key"
-  },
-  {
-    "name": "Staging",
-    "llmEndpoint": "http://staging:8080",
-    "mcpEndpoint": "http://staging:3000"
-  }
-]
-```
-
-The default `agw.llmEndpoint` / `agw.mcpEndpoint` settings become the "Default" profile. A gateway dropdown appears in the input toolbar when multiple profiles are configured.
-
-### Tabs
-
-| Tab | Description |
-|-----|-------------|
-| **Chat** | AI chat with streaming, tool use, system prompt, templates, history |
-| **Tools** | MCP tool playground — browse, test, execute with dynamic forms |
-| **Resources** | MCP resource browser — list and read resources |
-| **A2A** | Agent-to-Agent protocol — fetch agent cards, send tasks |
-
-## Local Development
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) v18+
-- [VS Code](https://code.visualstudio.com/)
-
-### Build from Source
+### 2. Install the Extension
 
 ```bash
 git clone https://github.com/sebastianmaniak/agw-vscode-extension.git
 cd agw-vscode-extension
-npm install
-npm run compile
-```
-
-### Install Locally
-
-```bash
+npm install && npm run compile
 npx @vscode/vsce package --no-dependencies --allow-missing-repository
 code --install-extension agw-vscode-0.2.0.vsix
 ```
 
-Then reload VS Code (`Cmd+Shift+P` → "Reload Window").
+### 3. Configure
 
-### Development Workflow
+Open **Settings** (`Cmd+,`) and search for `agw`:
 
-```bash
-npm run watch      # Auto-rebuild on changes
-npm run check-types # Type checking
-npm test           # Run tests
-npm run test:watch # Watch mode tests
+```jsonc
+{
+  "agw.llmEndpoint": "http://localhost:8080/openai",
+  "agw.mcpEndpoint": "http://localhost:8080/mcp",
+  "agw.apiKey": "your-api-key",       // optional
+  "agw.defaultModel": "gpt-4o"        // optional
+}
 ```
 
-Press **F5** in VS Code to launch an Extension Development Host.
+### 4. Go
 
-### Project Structure
+Click the **agentgateway** icon in the Activity Bar. Start chatting.
+
+---
+
+## Multi-Gateway Profiles
+
+Running multiple gateways? Configure them all and switch instantly:
+
+```jsonc
+{
+  // Default gateway (always available)
+  "agw.llmEndpoint": "http://localhost:8080/openai",
+  "agw.mcpEndpoint": "http://localhost:8080/mcp",
+
+  // Additional gateways
+  "agw.gateways": [
+    {
+      "name": "Production",
+      "llmEndpoint": "https://prod-gw.example.com/openai",
+      "mcpEndpoint": "https://prod-gw.example.com/mcp",
+      "apiKey": "prod-key"
+    },
+    {
+      "name": "Anthropic",
+      "llmEndpoint": "http://localhost:8080/anthropic",
+      "mcpEndpoint": "http://localhost:8080/mcp"
+    }
+  ]
+}
+```
+
+A gateway dropdown appears in the input toolbar. Switching reconnects automatically — new models, new tools, zero friction.
+
+---
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Cmd+L` / `Ctrl+L` | Send selected code to chat |
+| `Enter` | Send message |
+| `Shift+Enter` | New line in message |
+
+---
+
+## Development
+
+```bash
+npm run watch        # Auto-rebuild on changes
+npm run check-types  # Type checking
+npm test             # Run tests
+npm run test:watch   # Watch mode
+```
+
+Press **F5** to launch an Extension Development Host with the extension loaded.
+
+<details>
+<summary><strong>Project Structure</strong></summary>
 
 ```
 src/
-├── extension.ts              # Extension entry, activation, handler wiring
-├── types.ts                  # Shared types (config, API, messages, A2A)
+├── extension.ts                # Entry point, activation, handler wiring
+├── types.ts                    # Shared types (config, API, messages)
 ├── gateway/
-│   ├── client.ts             # HTTP client for agentgateway
-│   ├── chat.ts               # SSE streaming chat completions
-│   ├── models.ts             # Model listing
-│   ├── mcp.ts                # MCP JSON-RPC client (Streamable HTTP)
-│   └── a2a.ts                # A2A protocol client
+│   ├── client.ts               # HTTP client with health check fallback
+│   ├── chat.ts                 # SSE streaming + token usage capture
+│   ├── models.ts               # Model listing with graceful fallback
+│   ├── mcp.ts                  # MCP JSON-RPC over Streamable HTTP
+│   └── a2a.ts                  # A2A protocol (agent cards + tasks)
 ├── state/
-│   └── conversation.ts       # Chat history + persistence store
+│   └── conversation.ts         # Chat history + globalState persistence
 ├── providers/
-│   ├── chatViewProvider.ts   # Webview provider + completion loop
-│   └── toolTreeProvider.ts   # Tree view for MCP tools
+│   ├── chatViewProvider.ts     # Webview provider + agentic completion loop
+│   └── toolTreeProvider.ts     # Sidebar tree view for MCP tools
 └── webview/
-    ├── index.ts              # Preact app with 4 tabs + overlays
-    ├── styles.css            # VS Code theme-aware styles
+    ├── index.ts                # Preact app (4 tabs + overlay system)
+    ├── styles.css              # VS Code theme-aware styles
     └── components/
-        ├── ChatPanel.ts      # Chat UI with Cursor-style input bar
-        ├── McpPlayground.ts  # MCP tool testing
-        ├── ResourceBrowser.ts # MCP resource viewer
-        ├── A2aPlayground.ts  # A2A agent testing
-        ├── ConversationList.ts # Chat history browser
-        ├── SystemPromptEditor.ts # System prompt config
-        ├── PromptTemplates.ts # Saved prompt templates
-        ├── MessageBubble.ts  # Markdown message rendering
-        └── ToolCallCard.ts   # Tool call/result cards
+        ├── ChatPanel.ts        # Cursor-style input bar + action menu
+        ├── MessageBubble.ts    # Markdown rendering + Copy/Insert actions
+        ├── McpPlayground.ts    # Tool testing with dynamic forms
+        ├── ResourceBrowser.ts  # MCP resource viewer
+        ├── A2aPlayground.ts    # A2A agent card + task sender
+        ├── ConversationList.ts # History browser
+        ├── SystemPromptEditor.ts
+        ├── PromptTemplates.ts
+        └── ToolCallCard.ts     # Collapsible tool call/result cards
 ```
+
+</details>
+
+---
 
 ## Compatibility
 
-This extension works with:
-- **VS Code** (1.85+)
-- **Cursor** (VS Code fork)
-- **Windsurf** (VS Code fork)
+| Editor | Support |
+|--------|---------|
+| **VS Code** | 1.85+ |
+| **Cursor** | Full |
+| **Windsurf** | Full |
 
-Install via `.vsix` file in any VS Code-compatible editor.
+Install via `.vsix` in any VS Code-compatible editor.
 
-## License
+---
 
-Apache-2.0
+<p align="center">
+  <a href="https://agentgateway.dev">agentgateway.dev</a> · <a href="https://github.com/agentgateway/agentgateway">GitHub</a> · <a href="LICENSE">Apache-2.0</a>
+</p>
