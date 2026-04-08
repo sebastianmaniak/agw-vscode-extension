@@ -2,8 +2,10 @@ import { h } from 'preact';
 import { useRef, useEffect, useState } from 'preact/hooks';
 import htm from 'htm';
 import type { UIMessage } from '../index';
+import type { GatewayProfile } from '../../types';
 import { MessageBubble } from './MessageBubble';
 import { ModelSelector } from './ModelSelector';
+import { GatewaySelector } from './GatewaySelector';
 
 const html = htm.bind(h);
 
@@ -15,10 +17,13 @@ interface ChatPanelProps {
   streaming: boolean;
   responseModel: string;
   systemPrompt: string;
+  gateways: GatewayProfile[];
+  activeGateway: string;
   onSendMessage: (content: string) => void;
   onNewChat: () => void;
   onSelectModel: (model: string) => void;
   onReconnect: () => void;
+  onSwitchGateway: (name: string) => void;
   onShowHistory: () => void;
   onShowSystemPrompt: () => void;
   onShowTemplates: () => void;
@@ -71,11 +76,18 @@ export function ChatPanel(props: ChatPanelProps) {
   return html`
     <div class="chat-panel">
       <div class="chat-header">
-        <${ModelSelector}
-          models=${props.models}
-          current=${props.currentModel}
-          onSelect=${props.onSelectModel}
-        />
+        <div class="header-left">
+          <${GatewaySelector}
+            gateways=${props.gateways}
+            active=${props.activeGateway}
+            onSwitch=${props.onSwitchGateway}
+          />
+          <${ModelSelector}
+            models=${props.models}
+            current=${props.currentModel}
+            onSelect=${props.onSelectModel}
+          />
+        </div>
         <div class="header-right">
           <button class="icon-btn connect-btn ${props.connected ? 'connected' : ''}" onClick=${props.onReconnect} title=${props.connected ? 'Reconnect' : 'Connect to agentgateway'}>
             <span class="connection-dot ${props.connected ? 'connected' : 'disconnected'}" />

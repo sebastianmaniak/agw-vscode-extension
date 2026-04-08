@@ -144,6 +144,22 @@
             "required": ["id"]
           },
           "description": "Preset model list with optional provider labels for quick switching"
+        },
+        "agw.gateways": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string", "description": "Display name for this gateway (e.g., Production, Staging)" },
+              "llmEndpoint": { "type": "string", "description": "URL of the LLM listener" },
+              "mcpEndpoint": { "type": "string", "description": "URL of the MCP listener" },
+              "apiKey": { "type": "string", "description": "API key for this gateway" },
+              "defaultModel": { "type": "string", "description": "Default model for this gateway" }
+            },
+            "required": ["name", "llmEndpoint", "mcpEndpoint"]
+          },
+          "description": "Multiple agentgateway instances to switch between (each with their own LLM and MCP endpoints)"
         }
       }
     }

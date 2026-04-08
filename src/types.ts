@@ -5,12 +5,21 @@ export interface ModelPreset {
   provider?: string;
 }
 
+export interface GatewayProfile {
+  name: string;
+  llmEndpoint: string;
+  mcpEndpoint: string;
+  apiKey?: string;
+  defaultModel?: string;
+}
+
 export interface AgwConfig {
   llmEndpoint: string;
   mcpEndpoint: string;
   apiKey: string;
   defaultModel: string;
   modelPresets: ModelPreset[];
+  gateways: GatewayProfile[];
 }
 
 // --- OpenAI-compatible API types ---
@@ -49,6 +58,7 @@ export interface ChatTool {
 
 export interface ChatCompletionChunk {
   id: string;
+  model?: string;
   choices: Array<{
     index: number;
     delta: {
@@ -155,7 +165,8 @@ export type ExtensionToWebviewMessage =
   | { type: 'promptTemplatesLoaded'; templates: PromptTemplate[] }
   | { type: 'a2aAgentCard'; card: A2aAgentCardInfo | null; error?: string }
   | { type: 'a2aTaskResult'; result: string; error?: string }
-  | { type: 'codeContext'; code: string; fileName: string; language: string };
+  | { type: 'codeContext'; code: string; fileName: string; language: string }
+  | { type: 'gatewaysLoaded'; gateways: GatewayProfile[]; active: string };
 
 export interface A2aAgentCardInfo {
   name: string;
@@ -187,7 +198,8 @@ export type WebviewToExtensionMessage =
   | { type: 'insertCodeAtCursor'; code: string }
   | { type: 'copyCode'; code: string }
   | { type: 'fetchA2aCard' }
-  | { type: 'sendA2aTask'; message: string; skillId?: string };
+  | { type: 'sendA2aTask'; message: string; skillId?: string }
+  | { type: 'switchGateway'; name: string };
 
 // --- Prompt templates ---
 

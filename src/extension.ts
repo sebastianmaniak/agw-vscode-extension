@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import type { AgwConfig, PromptTemplate } from './types';
+import type { AgwConfig, GatewayProfile, PromptTemplate } from './types';
 import { GatewayClient } from './gateway/client';
 import { McpClient } from './gateway/mcp';
 import { A2aClient } from './gateway/a2a';
@@ -17,14 +17,32 @@ function getConfig(): AgwConfig {
     apiKey: cfg.get<string>('apiKey', ''),
     defaultModel: cfg.get<string>('defaultModel', ''),
     modelPresets: cfg.get<{ id: string; provider?: string }[]>('modelPresets', []),
+    gateways: cfg.get<GatewayProfile[]>('gateways', []),
   };
+}
+
+function buildGatewayProfiles(config: AgwConfig): GatewayProfile[] {
+  const profiles: GatewayProfile[] = [
+    {
+      name: 'Default',
+      llmEndpoint: config.llmEndpoint,
+      mcpEndpoint: config.mcpEndpoint,
+      apiKey: config.apiKey,
+      defaultModel: config.defaultModel,
+    },
+    ...config.gateways,
+  ];
+  return profiles;
 }
 
 const SYSTEM_PROMPT_KEY = 'agw.systemPrompt';
 const PROMPT_TEMPLATES_KEY = 'agw.promptTemplates';
 
 export function activate(context: vscode.ExtensionContext) {
-  const config = getConfig();
+  let config = getConfig();
+  let gatewayProfiles = buildGatewayProfiles(config);
+  let activeProfileName = 'Default';
+
   const gateway = new GatewayClient(config);
   const mcp = new McpClient(gateway);
   const a2a = new A2aClient(gateway);
@@ -35,6 +53,24 @@ export function activate(context: vscode.ExtensionContext) {
   let tools: McpTool[] = [];
   let currentModel = config.defaultModel;
   let connected = false;
+
+  function switchToProfile(profileName: string) {
+    const profile = gatewayProfiles.find((p) => p.name === profileName);
+    if (!profile) return;
+    activeProfileName = profileName;
+    const profileConfig: AgwConfig = {
+      llmEndpoint: profile.llmEndpoint,
+      mcpEndpoint: profile.mcpEndpoint,
+      apiKey: profile.apiKey ?? '',
+      defaultModel: profile.defaultModel ?? '',
+      modelPresets: config.modelPresets,
+      gateways: config.gateways,
+    };
+    gateway.updateConfig(profileConfig);
+    mcp.disconnect();
+    currentModel = profile.defaultModel ?? '';
+    connectToGateway();
+  }
 
   const statusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left,
@@ -64,6 +100,10 @@ export function activate(context: vscode.ExtensionContext) {
   // --- Handler wiring ---
 
   chatProvider.setReconnectHandler(() => connectToGateway());
+
+  chatProvider.setGatewayHandler((name: string) => {
+    switchToProfile(name);
+  });
 
   chatProvider.setModelChangeHandler((model) => {
     currentModel = model;
@@ -226,17 +266,20 @@ export function activate(context: vscode.ExtensionContext) {
 
     const healthy = await gateway.checkHealth();
     if (!healthy) {
-      statusBarItem.text = '$(error) agw: Disconnected';
+      statusBarItem.text = `$(error) agw: ${activeProfileName} (Disconnected)`;
       statusBarItem.tooltip = 'agentgateway is not reachable. Click to configure.';
       connected = false;
       chatProvider.sendToWebview({ type: 'connectionStatus', connected: false });
+      chatProvider.sendToWebview({ type: 'gatewaysLoaded', gateways: gatewayProfiles, active: activeProfileName });
       return;
     }
 
     connected = true;
-    statusBarItem.text = '$(check) agw: Connected';
-    statusBarItem.tooltip = `LLM: ${config.llmEndpoint}\nMCP: ${config.mcpEndpoint}`;
+    statusBarItem.text = `$(check) agw: ${activeProfileName}`;
+    const activeProfile = gatewayProfiles.find((p) => p.name === activeProfileName);
+    statusBarItem.tooltip = `Profile: ${activeProfileName}\nLLM: ${activeProfile?.llmEndpoint ?? config.llmEndpoint}\nMCP: ${activeProfile?.mcpEndpoint ?? config.mcpEndpoint}`;
     chatProvider.sendToWebview({ type: 'connectionStatus', connected: true });
+    chatProvider.sendToWebview({ type: 'gatewaysLoaded', gateways: gatewayProfiles, active: activeProfileName });
 
     models = await fetchModels(gateway);
     // Add preset models from settings
@@ -330,10 +373,9 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration('agw')) {
-        const newConfig = getConfig();
-        gateway.updateConfig(newConfig);
-        mcp.disconnect();
-        connectToGateway();
+        config = getConfig();
+        gatewayProfiles = buildGatewayProfiles(config);
+        switchToProfile(activeProfileName);
       }
     }),
   );

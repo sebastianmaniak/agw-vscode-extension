@@ -17,6 +17,7 @@ import type {
   PromptTemplate,
   ChatMessage,
   A2aAgentCardInfo,
+  GatewayProfile,
 } from '../types';
 
 const html = htm.bind(h);
@@ -39,6 +40,8 @@ interface AppState {
   responseModel: string;
   a2aAgentCard: A2aAgentCardInfo | null;
   a2aTaskResult: { result: string; error?: string } | null;
+  gateways: GatewayProfile[];
+  activeGateway: string;
   tab: Tab;
   overlay: Overlay;
   conversations: ConversationSummary[];
@@ -91,6 +94,8 @@ function App() {
       responseModel: '',
       a2aAgentCard: null,
       a2aTaskResult: null,
+      gateways: [],
+      activeGateway: 'Default',
       tab: saved?.tab ?? 'chat',
       overlay: 'none',
       conversations: [],
@@ -232,6 +237,10 @@ function App() {
         case 'a2aTaskResult':
           setState((prev) => ({ ...prev, a2aTaskResult: msg }));
           break;
+
+        case 'gatewaysLoaded':
+          setState((prev) => ({ ...prev, gateways: msg.gateways, activeGateway: msg.active }));
+          break;
       }
     };
 
@@ -261,6 +270,10 @@ function App() {
   };
 
   const onReconnect = () => { vscode.postMessage({ type: 'reconnect' }); };
+
+  const onSwitchGateway = (name: string) => {
+    vscode.postMessage({ type: 'switchGateway', name });
+  };
 
   const onTestTool = (toolName: string, args: Record<string, unknown>) => {
     setState((prev) => ({ ...prev, toolTestResult: null }));
@@ -345,10 +358,13 @@ function App() {
             streaming=${state.streaming}
             responseModel=${state.responseModel}
             systemPrompt=${state.systemPrompt}
+            gateways=${state.gateways}
+            activeGateway=${state.activeGateway}
             onSendMessage=${onSendMessage}
             onNewChat=${onNewChat}
             onSelectModel=${onSelectModel}
             onReconnect=${onReconnect}
+            onSwitchGateway=${onSwitchGateway}
             onShowHistory=${showHistory}
             onShowSystemPrompt=${() => setState((prev: AppState) => ({ ...prev, overlay: 'systemPrompt' }))}
             onShowTemplates=${() => {

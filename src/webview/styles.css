@@ -59,6 +59,7 @@ body {
   flex-shrink: 0;
 }
 
+.header-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .header-right { display: flex; align-items: center; gap: 8px; }
 
 /* ---- Chat Toolbar ---- */
@@ -539,6 +540,24 @@ pre:hover .code-actions { opacity: 1; }
   opacity: 0.7;
   white-space: nowrap;
 }
+
+/* ---- Gateway Selector ---- */
+.gateway-selector { flex-shrink: 0; }
+
+.gateway-select {
+  background: var(--input-bg);
+  color: var(--input-fg);
+  border: 1px solid var(--input-border);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gateway-select:focus { outline: none; border-color: var(--vscode-focusBorder); }
+.gateway-select:hover { border-color: var(--vscode-focusBorder); }
 
 /* ---- A2A ---- */
 .a2a-card-info { padding: 10px 10px; border-bottom: 1px solid var(--border); }

@@ -45,6 +45,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
   private onModelChange?: (model: string) => void;
   private onRefreshTools?: () => void;
   private onSetSystemPrompt?: (prompt: string) => void;
+  private onSwitchGateway?: (name: string) => void;
   private conversationHandlers?: ConversationHandlers;
   private resourceHandlers?: ResourceHandlers;
   private promptTemplateHandlers?: PromptTemplateHandlers;
@@ -64,6 +65,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
   setModelChangeHandler(handler: (model: string) => void): void { this.onModelChange = handler; }
   setRefreshToolsHandler(handler: () => void): void { this.onRefreshTools = handler; }
   setSystemPromptHandler(handler: (prompt: string) => void): void { this.onSetSystemPrompt = handler; }
+  setGatewayHandler(handler: (name: string) => void): void { this.onSwitchGateway = handler; }
   setConversationHandlers(handlers: ConversationHandlers): void { this.conversationHandlers = handlers; }
   setResourceHandlers(handlers: ResourceHandlers): void { this.resourceHandlers = handlers; }
   setPromptTemplateHandlers(handlers: PromptTemplateHandlers): void { this.promptTemplateHandlers = handlers; }
@@ -173,6 +175,9 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         break;
       case 'sendA2aTask':
         this.a2aHandlers?.onSendTask(msg.message, msg.skillId);
+        break;
+      case 'switchGateway':
+        this.onSwitchGateway?.(msg.name);
         break;
     }
   }
