@@ -3,7 +3,7 @@
   "displayName": "agentgateway",
   "description": "AI chat and MCP tool browser for agentgateway",
   "version": "0.3.0",
-  "publisher": "solo-io",
+  "publisher": "sebastianmaniak",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
