@@ -299,6 +299,8 @@ function App() {
     setState((prev) => ({ ...prev, codeContexts: prev.codeContexts.filter((c) => c.id !== id) }));
   };
 
+  const onAddGateway = () => { vscode.postMessage({ type: 'addGateway' }); };
+
   const onTestTool = (toolName: string, args: Record<string, unknown>) => {
     setState((prev) => ({ ...prev, toolTestResult: null }));
     vscode.postMessage({ type: 'testTool', toolName, args });
@@ -391,6 +393,7 @@ function App() {
             onReconnect=${onReconnect}
             onSwitchGateway=${onSwitchGateway}
             onRemoveContext=${onRemoveContext}
+            onAddGateway=${onAddGateway}
             onShowHistory=${showHistory}
             onShowSystemPrompt=${() => setState((prev: AppState) => ({ ...prev, overlay: 'systemPrompt' }))}
             onShowTemplates=${() => {

@@ -179,6 +179,9 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
       case 'switchGateway':
         this.onSwitchGateway?.(msg.name);
         break;
+      case 'addGateway':
+        vscode.commands.executeCommand('workbench.action.openSettings', 'agw.gateways');
+        break;
     }
   }
 

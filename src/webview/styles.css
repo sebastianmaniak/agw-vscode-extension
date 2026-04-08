@@ -180,13 +180,18 @@ body {
   overflow-y: auto;
 }
 
+/* ---- Input Area Wrapper ---- */
+.input-area-wrapper {
+  flex-shrink: 0;
+  padding: 0 10px 0;
+  position: relative;
+}
+
 /* ---- Input Box (Cursor-style) ---- */
 .input-box {
   border: 1px solid var(--input-border);
   border-radius: 10px;
-  margin: 8px 10px;
   background: var(--input-bg);
-  flex-shrink: 0;
   overflow: hidden;
 }
 .input-box:focus-within { border-color: var(--vscode-focusBorder); }
@@ -290,34 +295,44 @@ body {
   outline: none;
 }
 
-.settings-wrapper { position: relative; }
+.plus-btn { font-size: 16px !important; font-weight: 300; line-height: 1; }
 
-.settings-menu {
+.menu-wrapper { position: relative; }
+
+.action-menu {
   position: absolute;
-  bottom: 100%;
+  bottom: calc(100% + 6px);
   left: 0;
-  margin-bottom: 4px;
   background: var(--vscode-menu-background, var(--input-bg));
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 4px 0;
-  min-width: 140px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  z-index: 10;
+  min-width: 170px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  z-index: 100;
 }
 
-.settings-item {
-  display: block;
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: 100%;
   text-align: left;
   background: none;
   border: none;
   color: var(--fg);
-  padding: 6px 14px;
+  padding: 7px 14px;
   font-size: 12px;
   cursor: pointer;
 }
-.settings-item:hover { background: var(--vscode-list-hoverBackground); }
+.menu-item:hover { background: var(--vscode-list-hoverBackground); }
+.menu-icon { font-size: 13px; width: 16px; text-align: center; }
+
+.menu-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 8px;
+}
 
 .send-btn-new {
   background: var(--btn-bg);

@@ -199,7 +199,8 @@ export type WebviewToExtensionMessage =
   | { type: 'copyCode'; code: string }
   | { type: 'fetchA2aCard' }
   | { type: 'sendA2aTask'; message: string; skillId?: string }
-  | { type: 'switchGateway'; name: string };
+  | { type: 'switchGateway'; name: string }
+  | { type: 'addGateway' };
 
 // --- Prompt templates ---
 

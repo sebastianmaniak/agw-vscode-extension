@@ -24,6 +24,7 @@ interface ChatPanelProps {
   onReconnect: () => void;
   onSwitchGateway: (name: string) => void;
   onRemoveContext: (id: string) => void;
+  onAddGateway: () => void;
   onShowHistory: () => void;
   onShowSystemPrompt: () => void;
   onShowTemplates: () => void;
@@ -32,13 +33,13 @@ interface ChatPanelProps {
 
 export function ChatPanel(props: ChatPanelProps) {
   const [input, setInput] = useState('');
-  const [showSettings, setShowSettings] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const [editingModel, setEditingModel] = useState(false);
   const [modelDraft, setModelDraft] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modelInputRef = useRef<HTMLInputElement>(null);
-  const settingsRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -54,17 +55,17 @@ export function ChatPanel(props: ChatPanelProps) {
     }
   });
 
-  // Close settings menu on outside click
+  // Close menu on outside click
   useEffect(() => {
-    if (!showSettings) return;
+    if (!showMenu) return;
     const handler = (e: MouseEvent) => {
-      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
-        setShowSettings(false);
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowMenu(false);
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [showSettings]);
+  }, [showMenu]);
 
   const handleSend = () => {
     const trimmed = input.trim();
@@ -109,6 +110,11 @@ export function ChatPanel(props: ChatPanelProps) {
     else if (e.key === 'Escape') { setEditingModel(false); }
   };
 
+  const menuAction = (fn: () => void) => {
+    setShowMenu(false);
+    fn();
+  };
+
   const hasMultipleGateways = props.gateways.length > 1;
 
   return html`
@@ -125,96 +131,110 @@ export function ChatPanel(props: ChatPanelProps) {
         <div ref=${messagesEndRef} />
       </div>
 
-      <div class="input-box">
-        ${props.codeContexts.length > 0 && html`
-          <div class="context-chips">
-            ${props.codeContexts.map((ctx) => html`
-              <span key=${ctx.id} class="context-chip" title=${`${ctx.fileName}\n${ctx.code.slice(0, 200)}`}>
-                <span class="chip-icon">↗</span>
-                <span class="chip-label">${ctx.fileName || 'selection'}</span>
-                <button class="chip-remove" onClick=${() => props.onRemoveContext(ctx.id)} title="Remove">×</button>
-              </span>
-            `)}
-          </div>
-        `}
-        <textarea
-          ref=${textareaRef}
-          class="chat-input-new"
-          placeholder=${props.connected ? 'Describe what to do...' : 'Not connected to agentgateway'}
-          value=${input}
-          onInput=${handleInput}
-          onKeyDown=${handleKeyDown}
-          disabled=${!props.connected}
-          rows="1"
-        />
-        <div class="input-toolbar">
-          <div class="input-toolbar-left">
-            <button class="input-tool-btn" onClick=${props.onNewChat} title="New Chat">+</button>
-            ${hasMultipleGateways && html`
-              <select
-                class="input-tool-select"
-                value=${props.activeGateway}
-                onChange=${(e: Event) => props.onSwitchGateway((e.target as HTMLSelectElement).value)}
-                title="Switch gateway"
-              >
-                ${props.gateways.map((g) => html`<option key=${g.name} value=${g.name}>${g.name}</option>`)}
-              </select>
-            `}
-            ${editingModel ? html`
-              <input
-                ref=${modelInputRef}
-                class="input-model-edit"
-                type="text"
-                value=${modelDraft}
-                list="model-list"
-                onInput=${(e: Event) => setModelDraft((e.target as HTMLInputElement).value)}
-                onKeyDown=${handleModelKeyDown}
-                onBlur=${commitModel}
-                placeholder="Model..."
-              />
-              <datalist id="model-list">
-                ${props.models.map((m) => html`<option key=${m} value=${m} />`)}
-              </datalist>
-            ` : html`
-              <button class="input-tool-btn model-btn" onClick=${startModelEdit} title="Click to change model">
-                ${props.currentModel || 'Model'}${' '}↓
-              </button>
-            `}
-            <div class="settings-wrapper" ref=${settingsRef}>
-              <button class="input-tool-btn" onClick=${() => setShowSettings(!showSettings)} title="Settings">⚙</button>
-              ${showSettings && html`
-                <div class="settings-menu">
-                  <button class="settings-item" onClick=${() => { setShowSettings(false); props.onShowHistory(); }}>History</button>
-                  <button class="settings-item" onClick=${() => { setShowSettings(false); props.onShowSystemPrompt(); }}>
-                    System Prompt${props.systemPrompt ? ' •' : ''}
-                  </button>
-                  <button class="settings-item" onClick=${() => { setShowSettings(false); props.onShowTemplates(); }}>Templates</button>
-                  ${props.messages.length > 0 && html`
-                    <button class="settings-item" onClick=${() => { setShowSettings(false); props.onExportChat(); }}>Export</button>
-                  `}
-                </div>
+      <div class="input-area-wrapper">
+        <div class="input-box">
+          ${props.codeContexts.length > 0 && html`
+            <div class="context-chips">
+              ${props.codeContexts.map((ctx) => html`
+                <span key=${ctx.id} class="context-chip" title=${`${ctx.fileName}\n${ctx.code.slice(0, 200)}`}>
+                  <span class="chip-icon">↗</span>
+                  <span class="chip-label">${ctx.fileName || 'selection'}</span>
+                  <button class="chip-remove" onClick=${() => props.onRemoveContext(ctx.id)} title="Remove">×</button>
+                </span>
+              `)}
+            </div>
+          `}
+          <textarea
+            ref=${textareaRef}
+            class="chat-input-new"
+            placeholder=${props.connected ? 'Describe what to do...' : 'Not connected to agentgateway'}
+            value=${input}
+            onInput=${handleInput}
+            onKeyDown=${handleKeyDown}
+            disabled=${!props.connected}
+            rows="1"
+          />
+          <div class="input-toolbar">
+            <div class="input-toolbar-left">
+              <div class="menu-wrapper" ref=${menuRef}>
+                <button class="input-tool-btn plus-btn" onClick=${() => setShowMenu(!showMenu)} title="Actions">+</button>
+                ${showMenu && html`
+                  <div class="action-menu">
+                    <button class="menu-item" onClick=${() => menuAction(props.onNewChat)}>
+                      <span class="menu-icon">💬</span> New Chat
+                    </button>
+                    <button class="menu-item" onClick=${() => menuAction(props.onShowHistory)}>
+                      <span class="menu-icon">📋</span> History
+                    </button>
+                    <button class="menu-item" onClick=${() => menuAction(props.onShowSystemPrompt)}>
+                      <span class="menu-icon">⚙</span> System Prompt${props.systemPrompt ? ' •' : ''}
+                    </button>
+                    <button class="menu-item" onClick=${() => menuAction(props.onShowTemplates)}>
+                      <span class="menu-icon">📝</span> Templates
+                    </button>
+                    ${props.messages.length > 0 && html`
+                      <button class="menu-item" onClick=${() => menuAction(props.onExportChat)}>
+                        <span class="menu-icon">📤</span> Export
+                      </button>
+                    `}
+                    <div class="menu-divider" />
+                    <button class="menu-item" onClick=${() => menuAction(props.onAddGateway)}>
+                      <span class="menu-icon">🔌</span> Add Gateway
+                    </button>
+                  </div>
+                `}
+              </div>
+              ${hasMultipleGateways && html`
+                <select
+                  class="input-tool-select"
+                  value=${props.activeGateway}
+                  onChange=${(e: Event) => props.onSwitchGateway((e.target as HTMLSelectElement).value)}
+                  title="Switch gateway"
+                >
+                  ${props.gateways.map((g) => html`<option key=${g.name} value=${g.name}>${g.name}</option>`)}
+                </select>
+              `}
+              ${editingModel ? html`
+                <input
+                  ref=${modelInputRef}
+                  class="input-model-edit"
+                  type="text"
+                  value=${modelDraft}
+                  list="model-list"
+                  onInput=${(e: Event) => setModelDraft((e.target as HTMLInputElement).value)}
+                  onKeyDown=${handleModelKeyDown}
+                  onBlur=${commitModel}
+                  placeholder="Model..."
+                />
+                <datalist id="model-list">
+                  ${props.models.map((m) => html`<option key=${m} value=${m} />`)}
+                </datalist>
+              ` : html`
+                <button class="input-tool-btn model-btn" onClick=${startModelEdit} title="Click to change model">
+                  ${props.currentModel || 'Model'}${' '}↓
+                </button>
               `}
             </div>
+            <button
+              class="send-btn-new"
+              onClick=${handleSend}
+              disabled=${!props.connected || props.streaming || !input.trim()}
+              title="Send message"
+            >
+              ${props.streaming ? '...' : '↑'}
+            </button>
           </div>
-          <button
-            class="send-btn-new"
-            onClick=${handleSend}
-            disabled=${!props.connected || props.streaming || !input.trim()}
-            title="Send message"
-          >
-            ${props.streaming ? '...' : '↑'}
-          </button>
         </div>
-      </div>
 
-      <div class="status-bar">
-        <button class="status-connection ${props.connected ? 'connected' : ''}" onClick=${props.onReconnect} title=${props.connected ? 'Connected — click to reconnect' : 'Disconnected — click to connect'}>
-          <span class="status-dot ${props.connected ? 'connected' : 'disconnected'}" />
-          ${props.connected ? props.activeGateway : 'Disconnected'}
-        </button>
-        ${props.responseModel && props.responseModel !== props.currentModel && html`
-          <span class="status-model-badge" title="Actual model used">${props.responseModel}</span>
-        `}
+        <div class="status-bar">
+          <button class="status-connection ${props.connected ? 'connected' : ''}" onClick=${props.onReconnect} title=${props.connected ? 'Connected — click to reconnect' : 'Disconnected — click to connect'}>
+            <span class="status-dot ${props.connected ? 'connected' : 'disconnected'}" />
+            ${props.connected ? props.activeGateway : 'Disconnected'}
+          </button>
+          ${props.responseModel && props.responseModel !== props.currentModel && html`
+            <span class="status-model-badge" title="Actual model used">${props.responseModel}</span>
+          `}
+        </div>
       </div>
     </div>
   `;
