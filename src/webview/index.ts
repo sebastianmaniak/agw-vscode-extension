@@ -42,6 +42,7 @@ interface AppState {
   a2aTaskResult: { result: string; error?: string } | null;
   gateways: GatewayProfile[];
   activeGateway: string;
+  codeContexts: CodeContext[];
   tab: Tab;
   overlay: Overlay;
   conversations: ConversationSummary[];
@@ -56,6 +57,14 @@ export interface UIMessage {
   toolCall?: ToolCall;
   toolCallId?: string;
   streaming?: boolean;
+}
+
+export interface CodeContext {
+  id: string;
+  fileName: string;
+  language: string;
+  code: string;
+  lineRange?: string;
 }
 
 function chatMessagesToUI(messages: ChatMessage[]): UIMessage[] {
@@ -96,6 +105,7 @@ function App() {
       a2aTaskResult: null,
       gateways: [],
       activeGateway: 'Default',
+      codeContexts: [],
       tab: saved?.tab ?? 'chat',
       overlay: 'none',
       conversations: [],
@@ -222,11 +232,13 @@ function App() {
           break;
 
         case 'codeContext': {
-          // Insert code context into chat input
-          const block = `\`\`\`${msg.language}\n${msg.code}\n\`\`\``;
-          const prefix = msg.fileName ? `From \`${msg.fileName}\`:\n` : '';
-          (window as any).__pendingInput = prefix + block + '\n\n';
-          setState((prev) => ({ ...prev, tab: 'chat', overlay: 'none' }));
+          const ctx: CodeContext = {
+            id: crypto.randomUUID(),
+            fileName: msg.fileName,
+            language: msg.language,
+            code: msg.code,
+          };
+          setState((prev) => ({ ...prev, codeContexts: [...prev.codeContexts, ctx], tab: 'chat', overlay: 'none' }));
           break;
         }
 
@@ -251,11 +263,19 @@ function App() {
   // --- Actions ---
 
   const onSendMessage = (content: string) => {
+    // Prepend code contexts to the message
+    let fullContent = '';
+    for (const ctx of state.codeContexts) {
+      const prefix = ctx.fileName ? `From \`${ctx.fileName}\`:\n` : '';
+      fullContent += prefix + `\`\`\`${ctx.language}\n${ctx.code}\n\`\`\`\n\n`;
+    }
+    fullContent += content;
     setState((prev) => ({
       ...prev,
-      messages: [...prev.messages, { id: crypto.randomUUID(), role: 'user', content }],
+      messages: [...prev.messages, { id: crypto.randomUUID(), role: 'user', content: fullContent }],
+      codeContexts: [],
     }));
-    vscode.postMessage({ type: 'sendMessage', content });
+    vscode.postMessage({ type: 'sendMessage', content: fullContent });
   };
 
   const onNewChat = () => { vscode.postMessage({ type: 'newChat' }); };
@@ -273,6 +293,10 @@ function App() {
 
   const onSwitchGateway = (name: string) => {
     vscode.postMessage({ type: 'switchGateway', name });
+  };
+
+  const onRemoveContext = (id: string) => {
+    setState((prev) => ({ ...prev, codeContexts: prev.codeContexts.filter((c) => c.id !== id) }));
   };
 
   const onTestTool = (toolName: string, args: Record<string, unknown>) => {
@@ -360,11 +384,13 @@ function App() {
             systemPrompt=${state.systemPrompt}
             gateways=${state.gateways}
             activeGateway=${state.activeGateway}
+            codeContexts=${state.codeContexts}
             onSendMessage=${onSendMessage}
             onNewChat=${onNewChat}
             onSelectModel=${onSelectModel}
             onReconnect=${onReconnect}
             onSwitchGateway=${onSwitchGateway}
+            onRemoveContext=${onRemoveContext}
             onShowHistory=${showHistory}
             onShowSystemPrompt=${() => setState((prev: AppState) => ({ ...prev, overlay: 'systemPrompt' }))}
             onShowTemplates=${() => {
