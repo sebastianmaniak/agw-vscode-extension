@@ -34,7 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
     100,
   );
   statusBarItem.command = 'agw.configure';
-  statusBarItem.text = '$(plug) AGW: Connecting...';
+  statusBarItem.text = '$(plug) agw: Connecting...';
   statusBarItem.show();
   context.subscriptions.push(statusBarItem);
 
@@ -57,19 +57,19 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   async function connectToGateway() {
-    statusBarItem.text = '$(sync~spin) AGW: Connecting...';
+    statusBarItem.text = '$(sync~spin) agw: Connecting...';
 
     const healthy = await gateway.checkHealth();
     if (!healthy) {
-      statusBarItem.text = '$(error) AGW: Disconnected';
-      statusBarItem.tooltip = 'AgentGateway is not reachable. Click to configure.';
+      statusBarItem.text = '$(error) agw: Disconnected';
+      statusBarItem.tooltip = 'agentgateway is not reachable. Click to configure.';
       connected = false;
       chatProvider.sendToWebview({ type: 'connectionStatus', connected: false });
       return;
     }
 
     connected = true;
-    statusBarItem.text = '$(check) AGW: Connected';
+    statusBarItem.text = '$(check) agw: Connected';
     statusBarItem.tooltip = `LLM: ${config.llmEndpoint}\nMCP: ${config.mcpEndpoint}`;
     chatProvider.sendToWebview({ type: 'connectionStatus', connected: true });
 

@@ -71,7 +71,7 @@ export function ChatPanel(props: ChatPanelProps) {
       <div class="messages">
         ${props.messages.length === 0 && html`
           <div class="empty-state">
-            <p>Send a message to start chatting through AgentGateway.</p>
+            <p>Send a message to start chatting through agentgateway.</p>
           </div>
         `}
         ${props.messages.map((msg) => html`
@@ -84,7 +84,7 @@ export function ChatPanel(props: ChatPanelProps) {
         <textarea
           ref=${textareaRef}
           class="chat-input"
-          placeholder=${props.connected ? 'Send a message...' : 'Not connected to AgentGateway'}
+          placeholder=${props.connected ? 'Send a message...' : 'Not connected to agentgateway'}
           value=${input}
           onInput=${handleInput}
           onKeyDown=${handleKeyDown}

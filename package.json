@@ -1,7 +1,7 @@
 {
   "name": "agw-vscode",
-  "displayName": "AgentGateway",
-  "description": "AI chat and MCP tool browser for AgentGateway",
+  "displayName": "agentgateway",
+  "description": "AI chat and MCP tool browser for agentgateway",
   "version": "0.1.0",
   "publisher": "solo-io",
   "license": "Apache-2.0",
@@ -16,7 +16,7 @@
       "activitybar": [
         {
           "id": "agw-explorer",
-          "title": "AgentGateway",
+          "title": "agentgateway",
           "icon": "resources/agw-icon.svg"
         }
       ]
@@ -38,19 +38,19 @@
       {
         "command": "agw.openChat",
         "title": "Open Chat",
-        "category": "AgentGateway",
+        "category": "agentgateway",
         "icon": "$(comment-discussion)"
       },
       {
         "command": "agw.refreshTools",
         "title": "Refresh Tools",
-        "category": "AgentGateway",
+        "category": "agentgateway",
         "icon": "$(refresh)"
       },
       {
         "command": "agw.configure",
         "title": "Configure",
-        "category": "AgentGateway",
+        "category": "agentgateway",
         "icon": "$(gear)"
       },
       {
@@ -84,7 +84,7 @@
       ]
     },
     "configuration": {
-      "title": "AgentGateway",
+      "title": "agentgateway",
       "properties": {
         "agw.llmEndpoint": {
           "type": "string",
