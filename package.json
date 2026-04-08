@@ -2,7 +2,7 @@
   "name": "agw-vscode",
   "displayName": "agentgateway",
   "description": "AI chat and MCP tool browser for agentgateway",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "publisher": "sebastianmaniak",
   "license": "Apache-2.0",
   "repository": {
